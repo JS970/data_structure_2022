@@ -24,61 +24,54 @@ public:
 		rows = rows_input;
 		cols = cols_input;
 
-		data = new int[rows];
-		for (int i = 0; i < rows*sizeof(data); i = i + sizeof(data))
-			for (int j = 0; j < cols; j++)
-				(&data[i])[j] = rand() % (rows * cols);
+		data = new int(rows * cols);
 	}
-	int * get_data(); // 이것 이외의 방법이 떠오르지 않는다...
+	int get_data();
 	int show_data();
 	int sort_data();
 	int addMatrix(Matrix&);
 	int MultiplyMatrix(Matrix&, Matrix&);
 };
 
-int* Matrix::get_data()
+int Matrix::get_data()
 {
-	return data;
+	for (int i = 0; i < rows * cols; i++)
+		data[i] = rand() % (rows * cols);
+	return 1;
 }
 
 int Matrix::show_data()
 {
-	for (int i = 0; i < rows * sizeof(data); i = i + sizeof(data))
+	int idx;
+	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < cols; j++)
-			printf("%d ", (&data[i])[j]);
-		printf("\n");
+		{
+			idx = i * j + j;
+			cout << data[idx] << " ";
+		}
+		cout << endl;
 	}
-
 	return 1;
 }
 
 int Matrix::sort_data()
 {
-	return rows*10 + cols;
+	return 1;
 }
 
 int Matrix::addMatrix(Matrix& m)
 {
-	if (this->sort_data() == m.sort_data())
+	for (int i = 0; i < rows * cols; i++)
 	{
-		int tmp = 0;
-		for (int i = 0; i <= rows*sizeof(data); i = i + sizeof(data))
-		{
-			for (int j = 0; j < cols; j++)
-			{
-				tmp = (&data[i])[j] + (&m.get_data()[i])[j];
-				(&data[i])[j] = tmp;
-			}
-		}
-		return 1;
+		data[i] += m.data[i];
 	}
-	else
-		return 0;
+	return 1;
 }
 
 int Matrix::MultiplyMatrix(Matrix& m1, Matrix& m2)
 {
+
 
 	return 1;
 }
@@ -87,21 +80,22 @@ int main(void)
 {
 	Matrix matrixA(AROWS, ACOLS);
 	Matrix matrixA1(AROWS, ACOLS);
-	//Matrix matrixB(BROWS,BCOLS);
-	//Matrix matrixB1(BROWS, BCOLS);
+	Matrix matrixB(BROWS, BCOLS);
+	Matrix matrixC(CROWS, CCOLS);
 
 	srand(time(NULL));
 
 
-	
+	matrixA.get_data();
 	matrixA.show_data();
 	cout << endl;
+	matrixA1.get_data();
 	matrixA1.show_data();
 	cout << endl;
 	matrixA.addMatrix(matrixA1);
 	matrixA.show_data();
 	cout << endl;
 
-		
+
 	system("pause");
 }
