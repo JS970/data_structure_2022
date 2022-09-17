@@ -24,7 +24,7 @@ public:
 		rows = rows_input;
 		cols = cols_input;
 
-		data = new int(rows * cols);
+		data = new int(rows * cols); // need to delete dynamic allocation
 	}
 	int get_data();
 	int show_data();
@@ -37,6 +37,7 @@ int Matrix::get_data()
 {
 	for (int i = 0; i < rows * cols; i++)
 		data[i] = rand() % (rows * cols);
+
 	return 1;
 }
 
@@ -47,11 +48,12 @@ int Matrix::show_data()
 	{
 		for (int j = 0; j < cols; j++)
 		{
-			idx = i * j + j;
+			idx = i * cols + j;
 			cout << data[idx] << " ";
 		}
 		cout << endl;
 	}
+	cout << endl;
 	return 1;
 }
 
@@ -73,23 +75,24 @@ Matrix& Matrix::addMatrix(Matrix& m)
 int Matrix::MultiplyMatrix(Matrix& m1, Matrix& m2)
 {
 	int tmpM = 0;
+	int idx = 0;
 	int idx_m1 = 0;
 	int idx_m2 = 0;
+
 	for (int i = 0; i < m1.rows; i++)
 	{
 		for (int j = 0; j < m2.cols; j++)
 		{
+			idx = i * (m2.cols) + j;
 			for (int k = 0; k < m1.cols; k++)
 			{
 				idx_m1 = i * (m1.rows + 1) + k;
 				idx_m2 = k * m2.cols + j;
+
+
 				tmpM += m1.data[idx_m1] * m2.data[idx_m2];
-				cout << idx_m1 << " " << idx_m2 << endl;
-				cout << tmpM << endl;
 			}
-			//cout << endl;
 			data[i*m2.cols+j] = tmpM;
-			//cout << i * m2.cols + j << endl;
 			tmpM = 0;
 		}
 	}
@@ -100,7 +103,7 @@ int Matrix::MultiplyMatrix(Matrix& m1, Matrix& m2)
 int main(void)
 {
 	Matrix matrixA(AROWS, ACOLS);
-	//Matrix matrixA1(AROWS, ACOLS);
+	Matrix matrixA1(AROWS, ACOLS);
 	Matrix matrixA2(AROWS, ACOLS);
 	Matrix matrixB(BROWS, BCOLS);
 	Matrix matrixC(CROWS, CCOLS);
@@ -109,23 +112,29 @@ int main(void)
 
 
 	matrixA.get_data();
-	//matrixA.show_data();
-	//cout << endl;
-	//matrixA1.get_data();
-	//matrixA1.show_data();
-	//cout << endl;
-	//matrixA2 = matrixA1.addMatrix(matrixA);
-	//matrixA2.show_data();
-	//cout << endl;
-
+	matrixB.get_data();
+	cout << "<MatrixA>" << endl;
 	matrixA.show_data();
 	cout << endl;
-	matrixB.get_data();
+	matrixA1.get_data();
+	cout << "<MatrixA1>" << endl;
+	matrixA1.show_data();
+	cout << endl;
+	//matrixA2 = matrixA1.addMatrix(matrixA);
+	//cout << "<MatrixA2 = MatrixA + MatrixA1>" << endl;
+	//matrixA2.show_data();
+	//cout << endl;
+	cout << "<MatrixA>" << endl;
+	matrixA.show_data();
+	cout << endl;
+	cout << "<MatrixB>" << endl;
+	matrixB.show_data();
+    cout << "<MatrixB>" << endl;
 	matrixB.show_data();
 	cout << endl;
-	matrixC.MultiplyMatrix(matrixA, matrixB);
-	matrixC.show_data();
-	
+	//matrixC.MultiplyMatrix(matrixA, matrixB);
+	//cout << "<MatrixC = MatrixA * MatrixB>" << endl;
+	//matrixC.show_data();
 
 	system("pause");
 }

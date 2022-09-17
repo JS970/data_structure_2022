@@ -1,1 +1,2 @@
 C:\Users\Jaesung Son\github\data_structure_2022\DS0908\x64\Debug\DS0908.exe
+C:\Users\손재성\workplace\data_structure_2022\DS0908\x64\Debug\DS0908.exe
