@@ -6,6 +6,8 @@
 #define MaxExp 10
 using namespace std;
 
+class Matrix;
+
 class Term
 {
 	friend Matrix;
@@ -18,7 +20,7 @@ class Matrix
 {
 private:
 	int rows, cols;
-	static int* data;
+	static Term* TermElement;
 	static int free;
 	int start, finish;
 	int terms;
@@ -34,8 +36,6 @@ public:
 	{
 		rows = rows_input;
 		cols = cols_input;
-
-		data = new int(rows * cols);
 	}
 
 	Matrix operator=(const Matrix& m)
@@ -47,25 +47,13 @@ public:
 
 int Matrix::get_data()
 {
-	for (int i = 0; i < rows * cols; i++)
-		data[i] = rand() % (rows * cols);
 
 	return 1;
 }
 
 int Matrix::show_data()
 {
-	int idx;
-	for (int i = 0; i < rows; i++)
-	{
-		for (int j = 0; j < cols; j++)
-		{
-			idx = i * cols + j;
-			cout << data[idx] << " ";
-		}
-		cout << endl;
-	}
-	cout << endl;
+
 	return 1;
 }
 
