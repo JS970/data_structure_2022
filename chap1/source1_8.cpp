@@ -36,30 +36,53 @@ public:
 	{
 		rows = rows_input;
 		cols = cols_input;
-
-		TermElement = new Term[rows * cols];
+		start = free;
+		finish = start + rows_input * cols_input;
+		terms = rows_input * cols_input;
+		free = free + rows_input * cols_input;
 	}
 
-	Matrix operator=(const Matrix& m)
+	Matrix(const Matrix& m)
+	{
+		rows = m.rows;
+		cols = m.cols;
+		start = m.start;
+		finish = m.finish;
+		terms = m.terms;
+		free = m.free;
+	}
+
+	Matrix& operator=(const Matrix& m)
 	{
 		Matrix res(m);
+		rows = res.rows;
+		cols = res.cols;
+		start = res.start;
+		finish = res.finish;
+		terms = res.terms;
+		free = res.free;
 		return res;
 	}
 };
 
 int Matrix::get_data()
 {
-	for (int i = 0; i < rows * cols; i++)
+	if (finish == terms)
 	{
-		TermElement[i].coef = rand() % (rows * cols);
-		TermElement[i].exp = rand() % (rows * cols);
+		for (int i = 0; i < terms; i++)
+			TermElement[i].exp = rand() % (rows * cols);
 	}
+	for (int i = start; i < finish; i++)
+			TermElement[i].coef = rand() % (rows * cols);
 	return 1;
 }
 
 int Matrix::show_data()
 {
-
+	int j = 0;
+	for (int i = start; i < finish; i++)
+		cout << TermElement[i].coef << "x**" << TermElement[j++].exp << " ";
+	cout << endl;
 	return 1;
 }
 
@@ -70,7 +93,8 @@ int Matrix::sort_data()
 Matrix& Matrix::addMatrix(Matrix& m)
 {
 	Matrix tmp(rows, cols);
-
+	for (int i = start; i < finish; i++)
+		tmp.TermElement[tmp.start + i].coef = TermElement[i].coef + m.TermElement[m.start + i].coef;
 	return tmp;
 }
 
@@ -88,14 +112,17 @@ int main(void)
 	cout << "MatrixA :" << endl;
 	matrixA.get_data();
 	matrixA.show_data();
-
+	cout << endl;
+	
 	cout << "MatrixB :" << endl;
 	matrixB.get_data();
 	matrixB.show_data();
-	
+	cout << endl;
+
 	cout << "MatrixC = A + B :" << endl;
 	matrixC = matrixA.addMatrix(matrixB);
 	matrixC.show_data();
+	cout << endl;
 
 	system("pause");
 	return 0;
