@@ -29,7 +29,7 @@ public:
 	int get_data();
 	int show_data();
 	int sort_data();
-	Matrix& addMatrix(Matrix&);
+	Matrix& addMatrix(const Matrix&);
 	// int MultiplyMatrix(Matrix&, Matrix&);
 
 	Matrix(int rows_input, int cols_input)
@@ -42,26 +42,17 @@ public:
 		free = free + rows_input * cols_input;
 	}
 
-	Matrix(const Matrix& m)
+	Matrix& operator=(const Matrix& m)
 	{
+		// remember this mechanism of temporary object. cf) addMatrix
 		rows = m.rows;
 		cols = m.cols;
 		start = m.start;
 		finish = m.finish;
 		terms = m.terms;
 		free = m.free;
-	}
 
-	Matrix& operator=(const Matrix& m)
-	{
-		Matrix res(m);
-		rows = res.rows;
-		cols = res.cols;
-		start = res.start;
-		finish = res.finish;
-		terms = res.terms;
-		free = res.free;
-		return res;
+		return *this;
 	}
 };
 
@@ -90,13 +81,12 @@ int Matrix::sort_data()
 {
 	return 1;
 }
-Matrix& Matrix::addMatrix(Matrix& m)
+Matrix &Matrix::addMatrix(const Matrix& m)
 {
-	Matrix tmp(rows, cols); // 임시 포인터 주소를 반환하므로 에러 발생한다 ==> 고칠 것
 	for (int i = start; i < finish; i++)
-		tmp.TermElement[tmp.start + i].coef = TermElement[i].coef + m.TermElement[m.start + i].coef;
-	tmp.show_data();
-	return tmp;
+		TermElement[start + i].coef = TermElement[i].coef + m.TermElement[m.start + i].coef;
+
+	return *this;
 }
 
 int Matrix::free = 0;
@@ -122,6 +112,7 @@ int main(void)
 
 	cout << "MatrixC = A + B :" << endl;
 	matrixC = matrixA.addMatrix(matrixB);
+	//matrixC = matrixA;
 	matrixC.show_data();
 	cout << endl;
 
