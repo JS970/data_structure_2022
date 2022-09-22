@@ -13,7 +13,7 @@ public:
 	bool IsEmpty() const;
 	virtual T& Pop();
 	virtual void Push(const T&);
-	friend ostream& operator <<(ostream&, Set&);
+	friend ostream& operator <<<T>(ostream&, Set&);
 
 private:
 	T* array;
@@ -66,8 +66,13 @@ void Set<T>::Push(const T& x)
 		ChangeSizeID(array, capacity, 2 * capacity);
 		capacity *= 2;
 	}
-	array[++top] = x;
+	bool input_exist = false;
+	for (int i = 0; i < top+1; i++)
+		if (array[i] == x) input_exist = true;
+	if (!input_exist)
+		array[++top] = x;
 }
+	
 
 template <class T>
 T& Set<T>::Pop()
@@ -92,22 +97,39 @@ inline bool Set<T>::IsFull()
 
 // friend ostream& operator <<(ostream&, Set&);
 template <class T>
-ostream& Set<T>::operator<<(ostream& ostream, T& set)
+ostream& operator <<(ostream& stream, Set<T>& set)
 {
-	return ostream;
+	int n;
+	bool first = true;
+	cout << "Set : ";
+	while (!set.IsEmpty())
+	{
+		if (!first)
+		{
+			cout << ", ";
+		}
+		else
+		{
+			first = false;
+		}
+		n = set.Pop();
+		stream << n;
+	}
+	return stream;
 }
 
 int main()
 {
 	Set<int> b(4);
-	int n;
+	//int n;
 	// Set<float> fo(10);에 대하여도 구현할 것
 	// 화면에서 임의 숫자를 입력받아 Push() 호출하도록 수정
 	b.Push(3);
-	b.Push(5);
+	b.Push(2);
+	b.Push(3);
 	b.Push(1);
-	b.Push(6);
-	b.Push(7);
+	b.Push(1);
+	/*
 	if (b.IsEmpty())
 	{
 		cout << "empty" << endl;
@@ -120,8 +142,8 @@ int main()
 	{
 		n = b.Pop();
 		cout << "b.Pop() = " << n << endl;
-	}
-
+	}*/
+	cout << b << endl;
 	system("pause");
 	return 0;
 }

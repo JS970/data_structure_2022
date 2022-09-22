@@ -92,9 +92,10 @@ int Matrix::sort_data()
 }
 Matrix& Matrix::addMatrix(Matrix& m)
 {
-	Matrix tmp(rows, cols);
+	Matrix tmp(rows, cols); // 임시 포인터 주소를 반환하므로 에러 발생한다 ==> 고칠 것
 	for (int i = start; i < finish; i++)
 		tmp.TermElement[tmp.start + i].coef = TermElement[i].coef + m.TermElement[m.start + i].coef;
+	tmp.show_data();
 	return tmp;
 }
 
