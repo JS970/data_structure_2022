@@ -14,14 +14,16 @@ public:
 	T& Rear();
 	void Push(T const& x);
 	void Pop();
-	friend ostream& operator<<<T>(ostream& os, Queue<T>&);
-	friend istream& operator>><T>(istream& os, Queue<T>&);
+	// friend ostream& operator<<<T>(ostream& os, Queue<T>&);
+	// friend istream& operator>><T>(istream& os, Queue<T>&);
 private:
 	T* queue;
 	int front;
 	int rear;
 	int capacity;
 };
+
+/*
 template <class T>
 ostream& operator<<(ostream& os, Queue<T>& s) {
 
@@ -29,7 +31,7 @@ ostream& operator<<(ostream& os, Queue<T>& s) {
 template <class T>
 istream& operator>>(istream& os, Queue<T>& s) {
 
-}
+}*/
 template <class T>
 Queue<T>::Queue(int queueCapacity) : capacity(queueCapacity)
 {
@@ -44,7 +46,7 @@ template <class T>
 inline T& Queue<T>::Front()
 {
 	if (IsEmpty()) throw "Queue is empty. No front element";
-	return queue[(front + 1) % capacity];
+	return queue[(front+1) % capacity];
 }
 
 template <class T>
@@ -58,14 +60,15 @@ inline T& Queue<T>::Rear()
 template <class T>
 void Queue<T>::Push(T const& x)
 {
-	if ((rear + 1) % capacity == front)
+	// cout << "rear+1 : " << rear + 1 << ", capacity : " << capacity << ", rear : " << rear << endl;
+	if ((rear+1) % capacity == 0 && rear != -1)
 	{
 		T* newQueue = new T[2 * capacity];
 		// allocate an array with twice the capacity
 		int start = (front + 1) % capacity;
 		if (start < 2)
 			//copy(queue + start, queue + start + capacity - 1, newQueue);
-			memcpy(newQueue, queue + start, start + capacity - 1);
+			memcpy(newQueue, queue, sizeof(T) * (start + capacity));
 		else
 		{
 			//copy(queue + start, queue + capacity, newQueue);
@@ -74,8 +77,8 @@ void Queue<T>::Push(T const& x)
 			memcpy(newQueue + capacity - start, queue, rear + 1);
 		}
 		// switch to new Queue
-		front = 2 * capacity - 1;
-		rear = capacity - 2;
+		if (front != -1) front = 2 * capacity % capacity;
+		rear = capacity - 1;
 		capacity *= 2;
 		delete[] queue;
 		queue = newQueue;
@@ -89,8 +92,9 @@ template <class T>
 void Queue<T>::Pop()
 {
 	if (IsEmpty()) throw "Queue is empty. Cannot delelte.";
-	front = (front + 1) % capacity;
 	queue[front].~T();
+	front = (front + 1) % capacity;
+	
 }
 
 void main()
@@ -99,8 +103,8 @@ void main()
 	s.Push(2);
 	s.Push(1);
 	s.Push(4);
-	//s.Push(10); //구현시에 doubling 동작 가능한지 테스트
-	cin >> s; //구현 실습
+	s.Push(10); //구현시에 doubling 동작 가능한지 테스트
+	// cin >> s; //구현 실습
 	if (s.IsEmpty()) {
 		cout << "empty" << endl;
 	}
