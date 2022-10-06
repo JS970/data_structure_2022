@@ -56,7 +56,7 @@ inline T& Queue<T>::Rear()
 	return queue[rear];
 }
 
-// doubling queue capacity
+// doubling queue capacity - mid exam(+ template implementation)
 template <class T>
 void Queue<T>::Push(T const& x)
 {
