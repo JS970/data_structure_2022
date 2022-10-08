@@ -76,7 +76,7 @@ T& Bag<T>::Pop()
 	retValue = array[deletePos];
 	// 실습 사항: no ordering상태로 pop되게 수정
 	//copy(array + deletePos + 1, array + top + 1, array + deletePos);
-	memcpy(array + deletePos, array + deletePos + 1, sizeof(int) * (top - deletePos));
+	memcpy(array + deletePos, array + deletePos + 1, sizeof(T) * (top - deletePos));
 	top--;
 	return retValue;
 }
