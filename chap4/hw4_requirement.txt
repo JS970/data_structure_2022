@@ -1,0 +1,43 @@
+. Circular linked list template으로 수정하기 
+-> head node를 갖는 circular list로 class List { private: Node *last; } 구현,
+last는 마지막 노드를 가리킴
+
+. 난수(정수)가 입력되면 정렬된 list(head node가 있는 원형 리스트)를 생성
+
+. 두 개의 list를 merge하여 정렬된 list(head node 가 있는 원형 리스트)를 생성,
+Merge() 구현
+
+. iterator를 사용한 생성 및 출력, 난수(정수)를 생성하여 리스트 생성
+-> Print_List(CircularList&), Make_List(CircularList&) => TODO
+
+<Node>
+Node -> List, ListIterator, CircularList
+- Node(T, Node*) => teamplate로 구현, TODO -> Done
+- ~Node()
+: T data => teamplate로 구현, TODO -> Done
+: Node* link
+===============================
+
+<List>
+List -> ListIterator, CircularList
+- List()
+- ~List()
+- virtual void Add(T&) => teamplate로 구현, TODO -> Done
+- virtual void Delete(T&) => teamplate로 구현, TODO
+- virtual void Show() => template로 구현, TODO -> Done
+// - int Length()
+- void Merge(List&, List&) => teamplate로 구현, TODO
+: Node* first
+===============================
+
+<ListIterator>
+아마도 다 구현되어 있다.... 따로 구현할 건 없을 것 같다.
+===============================
+
+<CircularList> : public List
+- CircularList() => 구현, TODO -> Done
+- ~CircularList()
+- void Add(T&) => teamplate로 구현, TODO 
+- void Delete(T&) => teamplate로 구현, TODO
+- void Show()
+- void DeleteData(T& x) => template로 구현, TODO

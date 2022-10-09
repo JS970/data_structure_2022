@@ -236,7 +236,7 @@ int main(void) {
 	int value;
 	do
 	{
-		cout << endl << "1. Add new value to chain 'A'" << endl << "2. Add new value to chain 'B'"
+		cout		<< "1. Add new value to chain 'A'" << endl << "2. Add new value to chain 'B'"
 			<< endl << "3. Print all chains" << endl << "4. Invert chain"
 			<< endl << "5. Concatenate A and B" << endl << "6. Delete first node in chain"
 			<< endl << "7. Get Sum of the chain" << endl << "8. Get length of the chain"
