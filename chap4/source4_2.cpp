@@ -13,9 +13,9 @@ class List;
 template <class T>
 class Node 
 {
-	friend class List;
-	friend class ListIterator;
-	friend class CircularList;
+	friend class List<T>;
+	friend class ListIterator<T>;
+	friend class CircularList<T>;
 public:
 	Node(T, Node*);
 	~Node();
@@ -30,6 +30,7 @@ class List
 	friend class ListIterator;
 	friend class CircularList;
 public:
+	List();
 	List(Node<T> *, Node<T> *);
 	~List();
 	virtual void Add(T&);
@@ -57,9 +58,9 @@ public:
 	bool NextNotNull();
 	T* First();
 	T* Next();
-	Node<T>& GetCurrent();
+	T& GetCurrent();
 	ListIterator& operator++(); //Next( )
-	ListIterator operator ++(int);
+	ListIterator operator ++(T);
 	T& operator*() const;
 	T* operator->()const;
 	bool operator != (const ListIterator) const;
@@ -95,6 +96,13 @@ Node<T>::~Node()
 }
 
 template <class T>
+List<T>::List()
+{
+	first = 0;
+	last = 0;
+}
+
+template <class T>
 List<T>::List(Node<T>* fst, Node<T>* lst) 
 {
 	first = fst;
@@ -109,30 +117,31 @@ List<T>::~List()
 }
 
 template <class T>
-void List<T>::Add(T& x) {
+void List<T>::Add(T& x)
+{
 	if (!first) // empty list
 	{
-		first = new Node(x);
+		first = new Node<T>(x);
 		first->link = 0;
-		// 선형 list에서는 last->link는 항상 0을 가리킨다.
+		last->link = 0; // 리스트에 노드가 하나밖에 없으므로 시작이자 끝.
 	}
 	else 
 	{
-		Node<T>* n = new Node(x);
-		List<T> tmp(first, last);
-		ListIterator<T> itr(tmp);
-
-		while (itr.GetCurrent()->data <= x) itr++;
-		n->link = itr.GetCurrent()->link;
-		if (n->link == first)
+		Node<T>* n = new Node<T>(x);
+		ListIterator<T> iter(this);
+		while (iter.GetCurrent() <= x && iter.NextNotNull()) iter++;
+		if (iter.NextNotNull())
 		{
-
+			iter++->link = n;
+			n->link = ++iter;
 		}
-		else if (n->link )
-		last = n;
-
-		itr.~ListIterator();
-		tmp.~List();
+		else
+		{
+			iter++->link = n;
+			n->link = 0;
+			last = n;
+		}
+		delete iter;
 	}
 }
 
@@ -216,36 +225,32 @@ T* ListIterator<T>::Next() {
 }
 
 template <class T>
-Node<T>& ListIterator<T>::GetCurrent() {
-	// return &current->data;
-	return current;
+T& ListIterator<T>::GetCurrent() 
+{
+	return &current->data;
 }
 
 template <class T>
 ListIterator<T>& ListIterator<T>::operator++()
-{
-	current = current->link;
-	// Mext()와 달리 출력은 하지 않는다.
-	return *this;
-}
-
-// 용도를 잘 모르겠다..
-template <class T>
-ListIterator<T> ListIterator<T>::operator ++(int)
 {
 	ListIterator old = *this;
 	current = current->link;
 	return old;
 }
 
-// 데이터 반환
+template <class T>
+ListIterator<T> ListIterator<T>::operator ++(T)
+{
+	current = current->link;
+	return *this;
+}
+
 template <class T>
 T& ListIterator<T>::operator*() const 
 {
 	return current->data;
 }
 
-// 주소 반환
 template <class T>
 T* ListIterator<T>::operator->()const 
 {
@@ -481,8 +486,20 @@ void ListTesting() {
 */
 
 void main() {
+
+	List<int> lst;
+	int input;
+	cin >> input;
+	lst.Add(input);
+	cin >> input;
+	lst.Add(input);
+	cin >> input;
+	lst.Add(input);
+	lst.Show();
+	/*
 	cout << endl << "List Testing begins: " << endl;
 	CircularList<int> st[4];
+	
 	while (1)
 	{
 		cout << "\n1.Make_List1  2.Make_List 3.Merge  4.Print_List  5.exit\nEnter ur choice: ";
@@ -510,5 +527,6 @@ void main() {
 		case 5:	return;
 		}
 	}
+	*/
 	system("Pause");
 }
