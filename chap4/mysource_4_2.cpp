@@ -103,18 +103,18 @@ void List<T>::Show()
 }
 
 template <class T>
-class ListIterator
+class ListIterator : public CircularList<T>
 {
 public:
 	ListIterator(const CircularList<T>& lst);
 	~ListIterator();
 	bool NotNull();
 	bool NextNotNull();
-	T* First();
-	T* Next();
+	Node<T>* First();
+	Node<T>* Next();
 	Node<T>* Link();
-	T& operator *() const;
-	T* operator ->() const;
+	T* operator *() const;
+	T& operator ->() const;
 	ListIterator& operator ++();
 	ListIterator operator ++(T);
 	bool operator != (const ListIterator) const;
@@ -126,15 +126,15 @@ private:
 };
 
 template <class T>
-T& ListIterator<T>::operator * () const
+T* ListIterator<T>::operator * () const
 {
-	return current->data;
+	return &current->data;
 }
 
 template <class T>
-T* ListIterator<T>::operator -> () const
+T& ListIterator<T>::operator -> () const
 {
-	return &current->data;
+	return current->data;
 }
 
 template <class T>
@@ -168,7 +168,7 @@ template <class T>
 ListIterator<T>::ListIterator(const CircularList<T>& lst)
 	: list(lst), current(lst.first)
 {
-	cout << "CircularList Iterator is constructed" << endl;
+	// cout << "CircularList Iterator is constructed" << endl;
 }
 
 template <class T>
@@ -186,17 +186,16 @@ bool ListIterator<T>::NextNotNull()
 }
 
 template <class T>
-T* ListIterator<T>::First()
+Node<T>* ListIterator<T>::First()
 {
-	return &list.first->data;
+	return list.first;
 }
 
 template <class T>
-T* ListIterator<T>::Next()
+Node<T>* ListIterator<T>::Next()
 {
-	current = current->link;
-	cout << "current = " << current->data;
-	return &current->data;
+	// cout << "current = " << current->data;
+	return &(current->link);
 }
 
 template <class T>
@@ -248,23 +247,9 @@ void CircularList<T>::Add(T& x)
 	ListIterator<T>* itr = new ListIterator<T>(*this);
 	if (first)
 	{
-		/*
 		newNode->link = first;
 		last->link = newNode;
 		last = newNode;
-		*/
-		last = first;
-		while (itr->GetCurrent() <= x)
-		{
-			if (itr->Link()->data > x)
-			{
-				newNode->link = itr->Link();
-				last->link = newNode;
-				break;
-			}
-			last = itr->Link();
-			itr++;
-		}
 	}
 	else
 	{
@@ -352,6 +337,7 @@ void CircularList<T>::DeleteData(T& x)
 template <class T>
 void CircularList<T>::Show()
 {
+	/*
 	Node<T>* np;
 	np = first;
 	if (np->data > 0)
@@ -360,6 +346,15 @@ void CircularList<T>::Show()
 			cout << np->data << " ";
 			np = np->link;
 		} while (np != first);
+	else cout << "List is empty" << endl;
+	*/
+	ListIterator<T>* itr = new ListIterator<T>(*this);
+	if (itr->GetCurrent() != NULL)
+		do
+		{
+			cout << itr->GetCurrent() << " " << endl;
+			itr++;
+		} while (itr->Next() != itr->First());
 	else cout << "List is empty" << endl;
 }
 
