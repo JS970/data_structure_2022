@@ -1,4 +1,6 @@
 #include <iostream>
+#include <stdlib.h>
+#include "time.h"
 using namespace std;
 
 template <class T>
@@ -112,11 +114,12 @@ public:
 	bool NextNotNull();
 	Node<T>* First();
 	Node<T>* Next();
-	Node<T>* Link();
+	Node<T>* Current();
+	void inc();
 	T* operator *() const;
 	T& operator ->() const;
 	ListIterator& operator ++();
-	ListIterator operator ++(T);
+	ListIterator operator ++(int);
 	bool operator != (const ListIterator) const;
 	bool operator == (const ListIterator) const;
 	T GetCurrent();
@@ -138,18 +141,27 @@ T& ListIterator<T>::operator -> () const
 }
 
 template <class T>
-ListIterator<T>& ListIterator<T>::operator ++()
+ListIterator<T>& ListIterator<T>::operator ++ ()
+{
+	// ListIterator<T> old = *this;
+	current = current->link;
+	// cout << current->data << endl;
+	return *this;
+}
+
+template <class T>
+ListIterator<T> ListIterator<T>::operator ++ (int)
 {
 	ListIterator<T> old = *this;
 	current = current->link;
+	// cout << current->data << endl;
 	return old;
 }
 
 template <class T>
-ListIterator<T> ListIterator<T>::operator ++(T)
+void ListIterator<T>::inc()
 {
 	current = current->link;
-	return *this;
 }
 
 template <class T>
@@ -195,13 +207,13 @@ template <class T>
 Node<T>* ListIterator<T>::Next()
 {
 	// cout << "current = " << current->data;
-	return &(current->link);
+	return current->link;
 }
 
 template <class T>
-Node<T>* ListIterator<T>::Link()
+Node<T>* ListIterator<T>::Current()
 {
-	return current->link;
+	return current;
 }
 
 template <class T>
@@ -219,7 +231,7 @@ public:
 	~CircularList();
 	virtual void Add(T&);
 	virtual void Delete(T&);
-	virtual void Show();
+	virtual void Print_List();
 	virtual void DeleteData(T& x);
 private:
 	Node<T>* first;
@@ -245,18 +257,37 @@ void CircularList<T>::Add(T& x)
 {
 	Node<T>* newNode = new Node<T>(x, 0);
 	ListIterator<T>* itr = new ListIterator<T>(*this);
+	// ListIterator<T>* itr = new ListIterator<T>(*this);
 	if (first)
 	{
-		newNode->link = first;
-		last->link = newNode;
-		last = newNode;
+		while (itr->Next()->data < x && (itr->Next() != itr->First())) itr->inc();
+		// cout << "current data : " << itr->GetCurrent() << endl;
+		if (x < first->data) // new input number is smallest number in list
+		{
+			newNode->link = first;
+			first = newNode;
+			last->link = first;
+		}
+		else if (itr->Next() == last->link) // new input number is largest number in list
+		{
+			newNode->link = first;
+			last->link = newNode;
+			last = newNode;
+		}
+		else // new input number is going to insert between numbers in list
+		{
+			newNode->link = itr->Next();
+			itr->Current()->link = newNode;
+		}
 	}
 	else
 	{
 		first = newNode;
 		last = newNode;
-		newNode->link = newNode;
+		newNode->link = first;
 	}
+	// cout << "first : " << first->data  << ", link : " << first->link << endl;
+	// cout << " last : " << last->data << ", link : " << last ->link << endl;
 }
 
 template <class T>
@@ -335,7 +366,7 @@ void CircularList<T>::DeleteData(T& x)
 }
 
 template <class T>
-void CircularList<T>::Show()
+void CircularList<T>::Print_List()
 {
 	/*
 	Node<T>* np;
@@ -349,26 +380,37 @@ void CircularList<T>::Show()
 	else cout << "List is empty" << endl;
 	*/
 	ListIterator<T>* itr = new ListIterator<T>(*this);
-	if (itr->GetCurrent() != NULL)
+	if (itr->Next() != NULL)
 		do
 		{
 			cout << itr->GetCurrent() << " " << endl;
-			itr++;
-		} while (itr->Next() != itr->First());
+			itr->inc();
+			// cout << "First() : " << itr->First() << endl;
+			// cout << " Next() : " << itr->Next() << endl;
+			// ++itr; 바로 윗줄처럼 하면 동작하는데 overloading이 안된다...
+			// -> itr은 포인터니까 안되지
+		} while (itr->Next() != itr->First()->link);
 	else cout << "List is empty" << endl;
+}
+
+template <class T>
+void Make_List(CircularList<T>& clist)
+{
+	srand((unsigned int)time(NULL));
+	for (int i = 0; i < 10; i++)
+	{
+		int tmp = (i * rand()) % 100;
+		cout << "gen number : " << tmp << endl;
+		clist.Add((T&)tmp);
+	}
 }
 
 int main()
 {
 	CircularList<int> lst;
-	int input;
-	cin >> input;
-	lst.Add(input);
-	cin >> input;
-	lst.Add(input);
-	cin >> input;
-	lst.Add(input);
-	lst.Show();
+	Make_List(lst);
+	cout << endl << "Ordered CircularList : " << endl;
+	lst.Print_List();
 
 	return 0;
 }
