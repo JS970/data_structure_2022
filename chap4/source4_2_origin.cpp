@@ -1,8 +1,8 @@
-// ¼Ò½º ÄÚµå4.2: Circular Linked List - template ¹öÁ¯À¸·Î ÀüÈ¯ÇÏ±â 
-// head node¸¦ °®°í circular list·Î¼­   class List{ private: Node *last;}·Î ±¸ÇöÇÏ±â
-// ³­¼ö°¡ ÀÔ·ÂµÇ¸é Á¤·ÄµÈ list¸¦ ¸¸µç´Ù.
-// µÎ°³ÀÇ list¸¦ mergeÇÏ¿© Á¤·ÄµÈ list¸¦ ¸¸µç´Ù.
-// Ãâ·ÂÀº iterator¸¦ »ç¿ëÇÑ´Ù.
+ï»¿//ì†ŒìŠ¤ ì½”ë“œ4.2: Circular Linked List - template ë²„ì ¼ìœ¼ë¡œ ì „í™˜í•˜ê¸° 
+//head nodeë¥¼ ê°–ê³  circular listë¡œì„œ   class List{ private: Node *last;}ë¡œ êµ¬í˜„í•˜ê¸°
+//ë‚œìˆ˜ê°€ ì…ë ¥ë˜ë©´ ì •ë ¬ëœ listë¥¼ ë§Œë“ ë‹¤.
+//ë‘ê°œì˜ listë¥¼ mergeí•˜ì—¬ ì •ë ¬ëœ listë¥¼ ë§Œë“ ë‹¤.
+// ì¶œë ¥ì€ iteratorë¥¼ ì‚¬ìš©í•œë‹¤.
 // class Node, List, ListIterator
 #include <iostream>
 using namespace std;
@@ -11,172 +11,133 @@ template <class T>
 class List;
 
 template <class T>
-class Node
-{
+class Node {
 	friend class List<T>;
 	friend class ListIterator<T>;
 	friend class CircularList<T>;
 public:
-	Node(T, Node*);
+	Node(int, Node*);
 	~Node();
 private:
-	T data;
+	int num;
 	Node* link;
 };
 
 template <class T>
-class List
-{
-	friend class ListIterator;
-	friend class CircularList;
+class List {
+	friend class ListIterator<T>;
+	friend class CircularList<T>;
 public:
 	List();
-	List(Node<T>*, Node<T>*);
 	~List();
-	virtual void Add(T&);
-	virtual void Delete(T&);//ÁÖ¾îÁø x °ªÀ» °®´Â ³ëµå¸¦ »èÁ¦
+	virtual void L_Add(T&);
+	virtual void Delete(int&);//ì£¼ì–´ì§„ x ê°’ì„ ê°–ëŠ” ë…¸ë“œë¥¼ ì‚­ì œ
 	virtual void Show();
 	//int Length( ); //count the number of nodes in a list
-	void Merge(List&, List&); //the merged nodes in a sequential order
+	//void Merge(List&, List&);//the merged nodes in a sequential order
 private:
-	Node<T>* first;
-	Node<T>* last; // added
+	Node* first;
 };
 
 template <class T>
-class ListIterator
-{
+class ListIterator {
 public:
-	ListIterator(const List& lst)
-	{
-		list = lst;
-		current = lst.first;
-		cout << "List Iterator is constructed" << endl;
-	}
+	ListIterator(const List& lst);
 	~ListIterator();
 	bool NotNull();
 	bool NextNotNull();
-	T* First();
-	T* Next();
-	T& GetCurrent();
-	ListIterator& operator++(); //Next( )
-	ListIterator operator ++(T);
-	T& operator*() const;
-	T* operator->()const;
-	bool operator != (const ListIterator) const;
-	bool operator == (const ListIterator) const;
+	int* First();
+	int* Next();
+	int& operator*() const
+		return current->num;
+	int* operator->()const
+		return &current->num;
+	ListIterator& operator++() 
+	{
+		ListIterator old = *this;
+		current = current->link;
+		return old;
+	}
+	ListIterator operator ++(int)
+	{
+		current = current->link;
+		return *this;
+	}
+	bool operator != (const ListIterator) const
+		return current != right.current;
+	bool operator == (const ListIterator) const
+		return current == right.current;
+	int* GetCurrent();
 private:
-	Node<T>* current; //pointer to nodes
-	const List<T>& list;//existing list
+	Node* current; //pointer to nodes
+	const List& list;//existing list
 };
 
 template <class T>
-class CircularList : public List<T> // List class¸¦ CircularList classÀÇ public member·Î »ç¿ëÇÏ°Ú´Ù´Â ¼±¾ğ 
-{
+class CircularList : public List {
 public:
 	CircularList();
 	~CircularList();
-	void Add(T&);
-	void Delete(T&);
-	void DeleteData(T& x);
-	void Show();
+	virtual void C_Add(T&);
+	virtual void Delete(int&);
+	virtual void Show();
+	virtual void DeleteNum(int& x);
 };
 
 template <class T>
-Node<T>::Node(T element, Node* next)
-{
-	data = element;
+// (int element = 0, Node* next = 0)
+Node<T>::Node(int element, Node* next) {
+	num = element;
 	link = next;
 }
 
 template <class T>
-Node<T>::~Node()
-{
-	delete current;
+Node<T>::~Node() {
 }
 
 template <class T>
-List<T>::List()
-{
+List<T>::List() {
 	first = 0;
-	last = 0;
 }
 
 template <class T>
-List<T>::List(Node<T>* fst, Node<T>* lst)
+List<T>::~List() 
 {
-	first = fst;
-	last = lst;
+
 }
 
 template <class T>
-List<T>::~List()
+void List<T>::L_Add(T& x) 
 {
-	delete first;
-	delete last;
-}
-
-template <class T>
-void List<T>::Add(T& x)
-{
-	if (!first) // empty list
-	{
-		first = new Node<T>(x);
+	if (!first) {
+		first = new Node(x);
 		first->link = 0;
-		last->link = 0; // ¸®½ºÆ®¿¡ ³ëµå°¡ ÇÏ³ª¹Û¿¡ ¾øÀ¸¹Ç·Î ½ÃÀÛÀÌÀÚ ³¡.
 	}
-	else
-	{
-		Node<T>* n = new Node<T>(x);
-		ListIterator<T> iter(this);
-		while (iter.GetCurrent() <= x && iter.NextNotNull()) iter++;
-		if (iter.NextNotNull())
-		{
-			iter++->link = n;
-			n->link = ++iter;
-		}
-		else
-		{
-			iter++->link = n;
-			n->link = 0;
-			last = n;
-		}
-		delete iter;
+	else {
+		Node* n = new Node(x);
+		n->link = first;
+		first = n;
 	}
 }
 
 template <class T>
-void List<T>::Delete(T& x) {
+void List<T>::Delete(int& x) {
 	if (first == NULL) cout << " List is empty" << endl;
-	else
-	{
-		// body of delete
-		// Listiterator»ç¿ëÇØ¼­ xÅ½»ö ÈÄ »èÁ¦...?
-	}
+	// body of delete
 	return;
-
 }
 
 template <class T>
 void List<T>::Show() {
-	Node<T>* current;
+	Node* current;
 	current = first;
 	if (first)
-	{
 		while (current)
 		{
-			cout << current->data << " ";
+			cout << current->num << " ";
 			current = current->link;
 		}
-		cout << endl;
-	}
 	else cout << "List is empty" << endl;
-}
-
-template <class T>
-void List<T>::Merge(List& l1, List& l2)
-{
-	// TODO implement
 }
 
 /*
@@ -185,20 +146,10 @@ ListIterator::ListIterator(Node *ll){
 */
 
 
-// ListIterator(const List& lst);
-/* template <class T>
-ListIterator<T>::ListIterator(const List& lst)
-{
-	list = lst;
-	current = lst.first;
-	cout << "List Iterator is constructed" << endl;
-}
-*/
-
 template <class T>
-ListIterator<T>::~ListIterator()
-{
-
+ListIterator<T>::ListIterator(const List<T>& lst) :
+	list(lst), current(lst.first) {
+	cout << "List Iterator is constructed" << endl;
 }
 
 template <class T>
@@ -213,110 +164,66 @@ bool ListIterator<T>::NextNotNull() {
 }
 
 template <class T>
-T* ListIterator<T>::First() {
-	return &list.first->data;
+int* ListIterator<T>::First() {
+	return &list.first->num;
 }
 
 template <class T>
-T* ListIterator<T>::Next() {
+int* ListIterator<T>::Next() {
 	current = current->link;
-	cout << "current = " << current->data;
-	return &current->data;
+	cout << "current = " << current->num;
+	return &current->num;
 }
 
 template <class T>
-T& ListIterator<T>::GetCurrent()
-{
-	return &current->data;
+int* ListIterator<T>::GetCurrent() {
+	return &current->num;
 }
 
-template <class T>
-ListIterator<T>& ListIterator<T>::operator++()
-{
-	ListIterator old = *this;
-	current = current->link;
-	return old;
-}
 
 template <class T>
-ListIterator<T> ListIterator<T>::operator ++(T)
-{
-	current = current->link;
-	return *this;
-}
+CircularList<T>::CircularList() : List() { }
+
 
 template <class T>
-T& ListIterator<T>::operator*() const
-{
-	return current->data;
-}
-
-template <class T>
-T* ListIterator<T>::operator->()const
-{
-	return &current->data;
-}
-
-template <class T>
-bool ListIterator<T>::operator != (const ListIterator right) const
-{
-	return current != right.current;
-}
-
-template <class T>
-bool ListIterator<T>::operator == (const ListIterator right) const
-{
-	return current == right.current;
-}
-
-template <class T>
-CircularList<T>::CircularList() : List()
-{
-
-}
-
-template <class T>
-CircularList<T>::~CircularList()
-{
-
-}
-
-template <class T>
-void CircularList<T>::Add(T& x)
+void CircularList<T>::C_Add(T& x) 
 {
 	Node<T>* newNode = new Node(x);
-	if (first) { //nonempty list
+	if (first) 
+	{ //nonempty list
 		newNode->link = first->link;
 		first->link = newNode;
 	}
-	else { //empty list
+	else 
+	{ //empty list
 		first = newNode;
 		newNode->link = newNode;
 	}
 }
 
 template <class T>
-void CircularList<T>::Delete(T& x)
+void CircularList<T>::Delete(int& x) 
 {
-	Node* newNode = new Node(x);
-	if (first) { //nonempty list
+	Node<T>* newNode = new Node(x);
+	if (first) 
+	{ //nonempty list
 		Node* Temp = first->link;
 		first->link = first->link->link;
 		delete Temp;
 	}
-	else { //empty list
+	else
+	{ //empty list
 		cout << "empty list" << endl;
 	}
 }
 
 template <class T>
-void CircularList<T>::DeleteData(T& x)
-{
+void CircularList<T>::DeleteNum(int& x) {
 	//Node *newNode = new Node(x);
-	//first, medium, last
+	//first, medium, last Ã¼Å©
 	if (first) { //nonempty list
-		Node* CurrentNode = first;
-		Node* PreNode = first;
+		Node<T>* CurrentNode = first;
+		Node<T>* PreNode = first;
 		bool find = false;
 
 		//while (CurrentNode->link != first || CurrentNode == first)
@@ -372,9 +279,8 @@ void CircularList<T>::DeleteData(T& x)
 }
 
 template <class T>
-void CircularList<T>::Show()
-{
-	Node* np;
+void CircularList<T>::Show() {
+	Node<T>* np;
 	np = first;
 	if (np->num > 0)
 		do
@@ -385,25 +291,25 @@ void CircularList<T>::Show()
 	else cout << "List is empty" << endl;
 }
 
-/* listIteratorTest.cpp - List Iterator¸¦ »ç¿ë
-- Add( )¿¡¼­ ÇĞ»ıµéÀÌ ½Ç½ÀÇÒ ÄÚµå·Î
-  1) addµÈ µ¥ÀÌÅÍ¸¦ last node·Î Ãß°¡ÇÏ´Â ÄÚµå ÀÛ¼º,
-  2) ÀÔ·ÂµÈ °ªÀÌ sortµÇµµ·Ï add( )¸¦ ¼öÁ¤
-  3) sum(xi * xi+5)¸¦ ±¸ÇÏ´Â ÄÚµå ÀÛ¼º
+/* listIteratorTest.cpp - List Iteratorë¥¼ ì‚¬ìš©
+- Add( )ì—ì„œ í•™ìƒë“¤ì´ ì‹¤ìŠµí•  ì½”ë“œë¡œ
+  1) addëœ ë°ì´í„°ë¥¼ last nodeë¡œ ì¶”ê°€í•˜ëŠ” ì½”ë“œ ì‘ì„±,
+  2) ì…ë ¥ëœ ê°’ì´ sortë˜ë„ë¡ add( )ë¥¼ ìˆ˜ì •
+  3) sum(xi * xi+5)ë¥¼ êµ¬í•˜ëŠ” ì½”ë“œ ì‘ì„±
+*/
+//int printAll(const List& l);//list iteratorë¥¼ ì‚¬ìš©í•˜ì—¬ ì‘ì„±í•˜ëŠ” ì—°ìŠµ
+//int sumProductFifthElement(const List& l);//list iteratorë¥¼ ì‚¬ìš©í•˜ì—¬ ì‘ì„±í•˜ëŠ” ì—°ìŠµ
 
-
-
-//int printAll(const List& l);//list iterator¸¦ »ç¿ëÇÏ¿© ÀÛ¼ºÇÏ´Â ¿¬½À
-//int sumProductFifthElement(const List& l);//list iterator¸¦ »ç¿ëÇÏ¿© ÀÛ¼ºÇÏ´Â ¿¬½À
+/*
 int sum(const List& l)
 {
 	ListIterator li(l);
 	if (!li.NotNull()) return 0;
 	int retvalue = *li.First();
 	while (li.NextNotNull() == true) {
-		++li;//current¸¦ Áõ°¡½ÃÅ´
+		++li;//currentë¥¼ ì¦ê°€ì‹œí‚´
 		//retvalue = retvalue + *li.Next( );
-		retvalue = retvalue + *li.GetCurrent();//ÇöÀç current°¡ °¡¸£Å°´Â nodeÀÇ °ªÀ» °¡Á®¿È
+		retvalue = retvalue + *li.GetCurrent();//í˜„ì¬ currentê°€ ê°€ë¥´í‚¤ëŠ” nodeì˜ ê°’ì„ ê°€ì ¸ì˜´
 	}
 	return retvalue;
 }
@@ -486,20 +392,9 @@ void ListTesting() {
 */
 
 void main() {
-
-	List<int> lst;
-	int input;
-	cin >> input;
-	lst.Add(input);
-	cin >> input;
-	lst.Add(input);
-	cin >> input;
-	lst.Add(input);
-	lst.Show();
 	/*
 	cout << endl << "List Testing begins: " << endl;
-	CircularList<int> st[4];
-
+	CircularList st[4];
 	while (1)
 	{
 		cout << "\n1.Make_List1  2.Make_List 3.Merge  4.Print_List  5.exit\nEnter ur choice: ";
@@ -507,19 +402,15 @@ void main() {
 		switch (ch)
 		{
 		case 1:
-			cout << "Make List1" << endl;
 			Make_List(st[0]);
 			break;
 		case 2:
-			cout << "Make List2" << endl;
 			Make_List(st[1]);
 			break;
 		case 3:
-			cout << "Merge" << endl;
 			st[2] = st[0].Merge(st[1]);
 			break;
 		case 4:
-			cout << "Print list" << endl;
 			Print_List(st[0]);
 			Print_List(st[1]);
 			Print_List(st[3]);
