@@ -42,77 +42,6 @@ Node<T>::Node(T element, Node* next)
 template <class T>
 Node<T>::~Node() {}
 
-/*
-
-template <class T>
-class List
-{
-	friend CircularListIterator<T>;
-	friend CircularList<T>;
-public:
-	List();
-	~List();
-	virtual void Add(T);
-	virtual void Delete(T&);
-	virtual void Show();
-	void Merge(List&, List&);
-private :
-	Node<T>* first;
-};
-
-template <class T>
-List<T>::List()
-{
-	first = 0;
-}
-
-template <class T>
-List<T>::~List()
-{
-	delete first;
-}
-
-template <class T>
-void List<T>::Add(T x)
-{
-	if (!first)
-	{
-		first = new Node<T>(x, 0);
-		first->link = 0;
-	}
-	else
-	{
-		Node<T>* n = new Node<T>(x, 0);
-		n->link = first;
-		first = n;
-	}
-}
-
-template <class T>
-void List<T>::Delete(T& x)
-{
-	if (first == NULL) cout << "List is empty" << endl;
-
-	// body of Delete
-	// TODO IMPLEMENT
-}
-
-template <class T>
-void List<T>::Show()
-{
-	Node<T>* current;
-	current = first;
-	if (first)
-		while (current)
-		{
-			cout << current->data << " ";
-			current = current->link;
-		}
-	else cout << "List is empty" << endl;
-}
-
-*/
-
 template <class T>
 class CircularListIterator
 {
@@ -124,7 +53,6 @@ public:
 	Node<T>* First();
 	Node<T>* Next();
 	Node<T>* Current();
-	void inc();
 	T* operator *() const;
 	T& operator ->() const;
 	CircularListIterator<T>& operator ++();
@@ -137,10 +65,11 @@ private:
 	const CircularList<T>& list;
 };
 
+
 template <class T>
 T* CircularListIterator<T>::operator * () const
 {
-	return &current->data;
+	return &(current->data);
 }
 
 template <class T>
@@ -162,12 +91,6 @@ CircularListIterator<T> CircularListIterator<T>::operator ++ (int)
 	CircularListIterator<T> old = *this;
 	current = current->link;
 	return old;
-}
-
-template <class T>
-void CircularListIterator<T>::inc()
-{
-	current = current->link;
 }
 
 template <class T>
@@ -267,7 +190,7 @@ void CircularList<T>::Add(T& x)
 	CircularListIterator<T>* itr = new CircularListIterator<T>(*this);
 	if (first)
 	{
-		while (itr->Next()->data < x && (itr->Next() != itr->First())) itr->inc();
+		while (itr->Next()->data < x && (itr->Next() != itr->First())) ++(*itr);
 		if (x < first->data) // new input number is smallest number in list
 		{
 			newNode->link = first;
@@ -372,20 +295,56 @@ void CircularList<T>::DeleteData(T& x)
 template <class T>
 void CircularList<T>::Merge(CircularList<T>& l1, CircularList<T>& l2)
 {
-
+	CircularListIterator<T>* itr1 = new CircularListIterator<T>(l1);
+	CircularListIterator<T>* itr2 = new CircularListIterator<T>(l2);
+	T x;
+	bool empty = false;
+	// itr2->Current() != l2.last
+	while (1)
+	{
+		l2.first = itr2->Next();
+		l2.last->link = l2.first;
+		x = itr2->Current()->data;
+		while (itr1->Next()->data < x && (itr1->Next() != itr1->First())) ++(*itr1);
+		if (x < l1.first->data)
+		{
+			itr2->Current()->link = l1.first;
+			l1.first = itr2->Current();
+			l1.last->link = l1.first;
+		}
+		else if (itr1->Next() == l1.last->link)
+		{
+			itr2->Current()->link = l1.first;
+			l1.last->link = itr2->Current();
+			last = itr2->Current();
+		}
+		else
+		{
+			itr2->Current()->link = itr1->Next();
+			itr1->Current()->link = itr2->Current();
+		}
+		if (empty)
+		{
+			l2.first = NULL;
+			l2.last = NULL;
+			break;
+		}
+		itr2 = new CircularListIterator<T>(l2);
+		if (l2.first == l2.last) empty = true;
+	}
 }
 
 template <class T>
 void CircularList<T>::Print_List()
 {
 	CircularListIterator<T>* itr = new CircularListIterator<T>(*this);
-	if (itr->Next() != NULL)
+	if (itr->Current() != NULL)
 		do
 		{
 			cout << itr->GetCurrent() << " ";
-			// (*itr)++;
-			itr->inc();
-		} while (itr->Next() != itr->First()->link);
+			// (*itr)++ // not working
+			++(*itr); // working...
+		} while (itr->Next() != first->link);
 	else cout << "List is empty" << endl;
 	cout << endl;
 }
@@ -405,12 +364,12 @@ void CircularList<T>::Show()
 }
 
 template <class T>
-void Make_List(CircularList<T>& clist)
+void Make_List(CircularList<T>& clist, int seed)
 {
-	srand((unsigned int)time(NULL));
+	srand(seed);
 	for (int i = 0; i < 10; i++)
 	{
-		int tmp = (i * rand()) % 100;
+		int tmp = (rand()) % 100;
 		cout << "gen number #" << i  << " : "<< tmp << endl;
 		clist.Add((T&)tmp);
 	}
@@ -418,10 +377,25 @@ void Make_List(CircularList<T>& clist)
 
 int main()
 {
-	CircularList<int> lst;
-	Make_List(lst);
-	cout << endl << "Ordered CircularList : ";
-	lst.Print_List();
+	CircularList<int> lst1;
+	cout << "lst1 elements generation..." << endl;
+	Make_List(lst1, 100);
+	cout << endl;
+
+	cout << "lst2 elements generation..." << endl;
+	CircularList<int> lst2;
+	Make_List(lst2, 200);
+	cout << endl;
+
+	cout << "Ordered CircularList lst1 : " << endl;
+	lst1.Print_List();
+
+	cout << endl << "Ordered CircularList lst2 : " << endl;
+	lst2.Print_List();
+
+	lst1.Merge(lst1, lst2);
+	cout << endl << "Merged CircularList lst1 = lst1 + lst2 : " << endl;
+	lst1.Print_List();
 
 	return 0;
 }
