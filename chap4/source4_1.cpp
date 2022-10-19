@@ -70,10 +70,8 @@ void Chain<T>::Delete(void) //delete the first element after first
 	ChainNode<T>* current, * next;
 	if (first != nullptr) //non-empty list
 	{
-		next = first->link;
-
 		ChainNode<T>* temp = first;
-		first = next;
+		first = first->link;
 		delete temp;
 	}
 	else
@@ -180,7 +178,7 @@ int Show(const Chain<T>& l) {
 	if (!li.NotNull()) return 0; //empty list, return 0
 	T retvalue = *li.First();//get first element
 	cout << retvalue;
-	while (li.NextNotNull()) //make sure that next element exists
+	while (li.NextNotNull()) //make sure that next element exists 
 	{
 		retvalue = *li.Next();
 		cout << " <- " << retvalue;
@@ -308,9 +306,9 @@ int main(void) {
 			cin >> value;
 
 			if (value == 1)
-				sum(a);
+				cout << sum(a) << endl;
 			else if (value == 2)
-				sum(b);
+				cout << sum(b) << endl;
 			else
 				cout << "Invalid value! Return to menu..." << endl;
 			break;

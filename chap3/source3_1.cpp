@@ -84,8 +84,8 @@ T& Bag<T>::Pop()
 template <class T>
 inline bool Bag<T>::IsFull()
 {
-	if (top == MaxSize - 1) return TRUE;
-	else return FALSE;
+	if (top == MaxSize - 1) return true;
+	else return false;
 }
 int main() {
 	Bag<int> b(4);
