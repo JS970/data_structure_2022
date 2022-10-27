@@ -10,6 +10,8 @@ template<class T>
 class DoublyListNode {
 	friend class CircularDoublyList<T>;
 	friend class CircularDoublyListIterator<T>;
+	DoublyListNode();
+	~DoublyListNode();
 private:
 	T data; //T를 term으로 사용 => coef, exp, variabl로 표현할 수 있을 것
 	DoublyListNode<T>* llink, * rlink;
@@ -18,6 +20,7 @@ template<class T>
 class CircularDoublyList {
 	friend class CircularDoublyListIterator<T>;
 public:
+	// Head node를 사용하는 CircularDoublyList의 constructor
 	CircularDoublyList() { first = new DoublyListNode<T>; last = first;  first->rlink = last; last->llink = first; first->data = -1; }
 	CircularDoublyList(const CircularDoublyList<T>&);
 	~CircularDoublyList();
@@ -48,6 +51,8 @@ public:
 	T* First();
 	bool NotNull();
 	bool NextNotNull();
+	bool NotHead();
+	bool NextNotHead();
 private:
 	const CircularDoublyList<T>& list;
 	DoublyListNode<T>* current;
@@ -55,6 +60,13 @@ private:
 
 template<class T>
 DoublyListNode<T>* CircularDoublyList<T>::av = 0;
+
+template <class T>
+DoublyListNode<T>::DoublyListNode(){ }
+
+template <class T>
+DoublyListNode<T>::~DoublyListNode() { }
+
 
 template<class T>
 void CircularDoublyList<T>::Delete(DoublyListNode<T>* x)
@@ -82,7 +94,7 @@ void CircularDoublyList<T>::Insert(DoublyListNode<T>* p, DoublyListNode<T>* x)
 // Insert function에 대해서 연습할 것
 template<class T>
 void CircularDoublyList<T>::Insert(T x) {
-	DoublyListNode<T>* p, * temp = new DoublyListNode<T>(x);
+	DoublyListNode<T>* p, * temp = new DoublyListNode<T>();
 	temp->data = x;
 	p = first;
 
@@ -107,6 +119,17 @@ void CircularDoublyList<T>::Insert(T x) {
 template<class T>
 void CircularDoublyList<T>::Merge(CircularDoublyList<T>& b)
 {
+	CircularDoublyListIterator<T> it = CircularDoublyListIterator<T>(b);
+	T tmp;
+	// while (it.NextNotHead()) it.Next();
+	this->Insert(*it.First());
+	do
+	{
+		tmp = *it.Next();
+		this->Insert(tmp);
+	} while (it.NextNotHead());
+
+	/*
 	auto current = b.first->rlink;
 	while (current != b.first)
 	{
@@ -116,11 +139,12 @@ void CircularDoublyList<T>::Merge(CircularDoublyList<T>& b)
 		if (current->llink != b.first)
 			b.Delete(current->llink);
 	}
+	*/
 }
 template<class T>
 bool CircularDoublyList<T>::Delete(T _data)
 {
-	for (auto current = first; first != last; first++)
+	for (DoublyListNode<T>* current = first; current->rlink->data != -1; current = current->rlink)
 	{
 		if (current->data == _data)
 		{
@@ -166,6 +190,19 @@ bool CircularDoublyListIterator<T>::NextNotNull()
 	else return false;
 }
 
+template <class T>
+bool CircularDoublyListIterator<T>::NotHead()
+{
+	if (current->data == -1) return false;
+	else return true;
+}
+
+template <class T>
+bool CircularDoublyListIterator<T>::NextNotHead()
+{
+	if (current->rlink->data != -1) return true;
+	else return false;
+}
 
 template<class T>
 CircularDoublyList<T>::CircularDoublyList(const CircularDoublyList<T>& l)
@@ -201,7 +238,7 @@ ostream& operator<<(ostream& os, CircularDoublyList<T>& l)
 	if (!li.NotNull()) return os;
 	os << *li.First();
 	while (li.NextNotNull())
-		os << " + " << *li.Next();
+		os << " " << *li.Next();
 	os << endl;
 	return os;
 }
@@ -243,15 +280,16 @@ int main()
 		switch (select)
 		{
 		case 'a':
-			cout << "List a에 추가할 값을 입력 : " << endl;
-			cin >> weight;
+			cout << "List a에 10개의 난수 값을 입력... " << endl;
+			// cin >> weight;
 			GetData(a, 10);
-			a.Insert(weight);
+			// a.Insert(weight);
 			break;
 		case 'b':
-			cout << "List b에 추가할 값을 입력 : " << endl;
-			cin >> weight;
-			b.Insert(weight);
+			cout << "List b에 10개의 난수 값을 입력... : " << endl;
+			// cin >> weight;
+			// b.Insert(weight);
+			GetData(b, 10);
 			break;
 		case 'd':
 			cout << "List a와 b에서 삭제할 값을 입력 : " << endl;
@@ -267,6 +305,7 @@ int main()
 			break;
 		case 'm':
 			// TODO : a+b
+			cout << "List a와 List b를 Merge하여 List a에 저장..." << endl;
 			a.Merge(b);
 			break;
 		case 'p':
@@ -278,12 +317,12 @@ int main()
 		case 'q':
 		case 'Q':
 			cout << "Exit program.." << endl;
-			break;
+			system("pause");
+			return 0;
 		default:
 			cout << "WRONG INPUT  " << endl;
 			cout << "Re-Enter" << endl;
 		}
 	}
-	system("pause");
-	return 0;
+
 }
