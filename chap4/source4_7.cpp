@@ -326,3 +326,10 @@ int main()
 	}
 
 }
+
+/* generalized linked list */
+/*
+	책 읽어보고 구현 연습해 볼 것
+	꼭 해볼것
+	tree구현 실습 이후에 연습해볼 것
+*/
