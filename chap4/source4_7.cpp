@@ -48,6 +48,7 @@ public:
 		current = l.first->rlink;
 	}
 	T* Next();
+	DoublyListNode<T>* PrevNode();
 	T* First();
 	bool NotNull();
 	bool NextNotNull();
@@ -127,8 +128,12 @@ void CircularDoublyList<T>::Merge(CircularDoublyList<T>& b)
 	{
 		tmp = *it.Next();
 		this->Insert(tmp);
-	} while (it.NextNotHead());
 
+		if(it.PrevNode() != b.first)
+			b.Delete(it.PrevNode());
+		
+	} while (it.NextNotHead());
+	b.Delete(it.PrevNode()->llink);
 	/*
 	auto current = b.first->rlink;
 	while (current != b.first)
@@ -174,6 +179,12 @@ T* CircularDoublyListIterator<T>::Next() {
 	current = current->rlink;
 	if (current != list.first) return &current->data;
 	else return 0;
+}
+
+template <class T>
+DoublyListNode<T>* CircularDoublyListIterator<T>::PrevNode()
+{
+	return current->llink;
 }
 
 template<class T>
@@ -304,7 +315,6 @@ int main()
 				cout << "List b에" << weight << "값이 없음." << endl;
 			break;
 		case 'm':
-			// TODO : a+b
 			cout << "List a와 List b를 Merge하여 List a에 저장..." << endl;
 			a.Merge(b);
 			break;
