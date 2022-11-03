@@ -78,6 +78,7 @@ void Chain<T>::Delete(void) //delete the first element after first
 		cout << "Error - Empty List. not deleted" << endl;
 }
 
+/*
 template<class T>
 void Chain<T>::Add(const T& element) //add a new node after first
 {
@@ -91,7 +92,46 @@ void Chain<T>::Add(const T& element) //add a new node after first
 	newnode->link = first;
 	first = newnode;
 }
+*/
 
+template <class T>
+void Chain<T>::Add(const T& element)
+{
+	ChainNode<T>* newnode = new ChainNode<T>(element);
+	if (!first)
+	{
+		first = newnode;
+		return;
+	}
+	ChainNode<T>* p = first;
+	if (p->link)
+	{
+		while (element < p->link->data && !(p->link)) p = p->link;
+		if (element > p->link->data)
+		{
+			newnode->link = 0;
+			p->link = newnode;
+		}
+		else
+		{
+			newnode->link = p->link;
+			p->link = newnode;
+		}
+	}
+	else
+	{
+		if (first->data < element)
+		{
+			first->link = newnode;
+			newnode->link = 0;
+		}
+		else
+		{
+			newnode->link = first;
+			first = newnode;
+		}
+	}
+}
 template<class T>
 void Chain<T>::Invert() {
 	ChainNode<T>* p = first, * q = 0; //q trails p
@@ -181,7 +221,7 @@ int Show(const Chain<T>& l) {
 	while (li.NextNotNull()) //make sure that next element exists 
 	{
 		retvalue = *li.Next();
-		cout << " <- " << retvalue;
+		cout << " -> " << retvalue;
 	}
 	return retvalue;
 }
@@ -230,8 +270,21 @@ int main(void) {
 	int select;
 	//ChainNode<int> nd;
 	Chain<int> a, b;
-	ChainIterator<int> cit(a);
 	int value;
+	cin >> value;
+	a.Add(value);
+	cin >> value;
+	a.Add(value);
+	cin >> value;
+	a.Add(value);
+	cin >> value;
+	a.Add(value);
+	cin >> value;
+	a.Add(value);
+	ChainIterator<int> cit(a);
+	cout << "a.first : " << *cit.First() << endl;
+	Show(a);
+	/*
 	do
 	{
 		cout		<< "1. Add new value to chain 'A'" << endl << "2. Add new value to chain 'B'"
@@ -348,6 +401,7 @@ int main(void) {
 			cout << "WRONG INPUT" << endl;
 		}
 	} while (select != 10);
+	*/
 	system("pause");
 	return 0;
 }
