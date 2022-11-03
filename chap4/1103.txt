@@ -1,0 +1,23 @@
+﻿heterogeneous list : list의 노드가 다른 type을 가지는 경우
+
+|tag|data|link| => tag값을 보고 data의 타입을 알 수 있다.
+==================================================================
+infix notation : a+b-c
+- a, b, c => operand
+- +, - => operator
+
+==> parse tree를 생성, 여러가지가 나올 수 있다. => tree topology
+
+ 참고자료 : https://yaboong.github.io/data-structures/2018/02/10/1_binary-tree-1/
+
+skewed tree : 사향 트리, 한쪽으로 치우쳐진 tree, 성능이 좋지 않다. linked list와 다를 것이 없다.
+
+full binary tree : 모든 노드가 0개 혹은 2개의 자식 노드를 가지고 있는 경우
+
+complete binary tree => Heap : 마지막 레벨을 제외한 나머지 레벨에 노드들이 가득 차있고, 마지막 레벨의 노드는
+가장 왼쪽(*)부터 채워지는 형태. 이 구조를 그대로 사용하여 binary heap 데이터 구조를 만들 수 있다. 얘가 heap이다.
+
+* 오른쪽이 비워지는 건 괜찮지만, 왼쪽부터 가다가 자식이 없는 노드가 있고 오른쪽에 노드가 오는 것은 안됨
+* copmlete binary tree는 포인터(링크)없이 배열로 구현이 가능하다(?) <= 확인해 볼것
+* minmax heap 구조 => 배열을 사용한 tree 구현
+** tree구현은 배열을 사용해서 구현하는 방법과, 링크를 이용하여 구현하는 방법이 있다.
