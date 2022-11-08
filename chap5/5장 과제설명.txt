@@ -1,0 +1,18 @@
+source5_1을 이용하여 delete를 구현한다.
+
+			30
+	20				40
+15		25	
+
+
+inorder successor : 해당 노드를 대체하는 노드..? => 조사필요
+current node 가 root일수도 있고 아닐수도 있다.  아무튼 delete하기 위해서는 inorder successor를 찾아서 대체해 주어야 한다.
+
+	V
+L		R
+==========================================
+inorder 		: L V R		=> infix
+preorder 	: V L R		=> prefix
+postorder	: L R V		=> postfix
+
+non-leaf 노드를 삭제했을 때 : 삭제되는 값의 inorder successor를 대체하고, 
