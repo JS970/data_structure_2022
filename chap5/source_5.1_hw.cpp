@@ -29,7 +29,7 @@ public:
 
 	Boolean IsFull();
 
-	void Add(const KeyType& item);
+	void Add(const KeyType& x);
 
 	Boolean IsEmpty();
 
@@ -101,7 +101,7 @@ public:
 	// if number of elements in the queue is equal to the maximum size of
 	//   the queue, return TRUE (1); otherwise, return FALSE (0)
 
-	void Add(const KeyType& item);
+	void Add(const KeyType& x);
 	// if IsFull(), then QueueFull(); else insert item into the top of the queue.
 
 	bool IsEmpty();
