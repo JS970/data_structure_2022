@@ -363,9 +363,56 @@ bool Tree::Insert(int x) {//binary search tree를 만드는 입력 => A + B * C�
 	return true;
 }
 int Tree::Delete(int elm) {
-	//leaf node를 삭제하는 경우
-	//non-leaf node를 삭제하는 경우에는 inorder successor로 replace 한후에 leaf node를 삭제하도록 구현해야 한다. 
-	return 0;
+	TreeNode* p = root; // traversal node
+	TreeNode* q = 0;	// target node
+	TreeNode* r = 0;	// inorder sucessor node
+	TreeNode* s = 0;	// parent node
+	int inorderSucessor;
+	// find target node(q) and its parent node(s)
+	while (p)
+	{
+		s = q;
+		q = p;
+		if (elm == p->data) break;
+		if (elm < p->data) p = p->LeftChild;
+		else p = p->RightChild;
+	}
+	// if p == NULL, elm dosen't exist in this tree
+	if (!p)
+	{
+		cout << "no such element in tree" << endl;
+		return 0;
+	}
+
+	if (!q->LeftChild && !q->RightChild) // child node : 0
+	{
+		if (q->data < s->data) s->LeftChild = 0;
+		else if(q->data > s->data) s->RightChild = 0;
+	}
+	else if (!q->LeftChild || !q->RightChild) // child node : 1
+	{
+		if (q->data == s->LeftChild->data)
+		{
+			if (q->LeftChild) s->LeftChild = q->LeftChild;
+			else s->LeftChild = q->RightChild;
+		}
+		else if (q->data == s->RightChild->data)
+		{
+			if (q->LeftChild) s->RightChild = q->LeftChild;
+			else s->RightChild = q->RightChild;
+		}
+	}
+	else // non leaf, child node : 2
+	{
+		// configure inorder sucessor, inorder sucessor node(r)
+		r = q->RightChild;
+		while (r->LeftChild) r = r->LeftChild;
+		inorderSucessor = r->data;
+
+		this->Delete(inorderSucessor);
+		q->data = inorderSucessor;
+	}
+	return 1;
 }
 void Tree::NonrecInorder()//void Tree::inorder(TreeNode *CurrentNode)와 비교
 {
@@ -475,9 +522,13 @@ int main(void)
 			break;
 		case 'r':
 			int x;
+			cout << "Delete data insert" << endl;
 			cin >> x;
-			cout << t.Delete(x);//입력된 x에 대한 tree 노드를 찾아 삭제한다.
-			cout << endl;
+			if (t.Delete(x)) //입력된 x에 대한 tree 노드를 찾아 삭제한다.
+			{
+				cout << x << " sucessfully deleted" << endl;
+			}
+			else cout << "Delete " << x << " failed" << endl;
 			break;
 		case 'd':
 			t.inorder();
