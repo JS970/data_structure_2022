@@ -227,6 +227,7 @@ public:
 	void NoStackInorder();
 	void NonrecInorder();
 	void LevelOrder();
+	void Split(int i, Tree& b, Tree& c, int& x);
 	Tree* Copy(); //void Copy(Tree&);
 	TreeNode* InorderSucc(TreeNode*);
 };
@@ -496,18 +497,77 @@ void Tree::NoStackInorder() //inorder()와 비교
 	}
 }
 
+// split the binary search tree with respect to key i
+// original tree => tree b + tree c, split point : i, split point confirm : x
+void Tree::Split(int i, Tree& b, Tree& c, int& x)
+{
+	// empty tree
+	if (!root)
+	{
+		b.root = c.root = 0; x = 0;
+		return;
+	}
+	
+	int mode = 0;
+	TreeNode* prev = root;
+	TreeNode* current = root;
+	c.root = root;
+	while (current)
+	{
+		if (i == current->data) // split point i == root
+		{
+			if (current == root) // current == root -> split
+			{
+				x = current->data;
+				b.root = current->LeftChild;
+				c.root = current->RightChild;
+				return;
+			}
+			if (mode == 0) // split left child...?
+			{
+				prev->LeftChild = current->RightChild;
+				b.root = current->LeftChild;
+			}
+			else // split right child...?
+			{
+				prev->RightChild = current->LeftChild;
+				b.root = current->RightChild;
+			}
+			c.root = root;
+			x = current->data;
+			return;
+		}
+		else if (i < current->data) // key is less than current
+		{
+			prev = current;
+			mode = 0;
+			current = current->LeftChild; // move to leftchild
+		}
+		else // key is larger than current 
+		{
+			prev = current;
+			mode = 1;
+			current = current->RightChild;
+		}
+	}
+	return;
+}
+
 
 int main(void)
 {
 	srand(time(NULL));
 	Tree t;
+	Tree b, c;
 	int eq = -1;
 	char select = 'i';
 	int max = 0, x = 0;
+	int splitKey;
+	int splitConfirm;
 	while (select != 'q')
 	{
 		int rnd = 0;
-		cout << "BinarySearchTree. Select i:Insert, r: remove, d:Display, e:NonrecInorder, f:preorder, g:postorder, h:copy and compare, q : Quit =>";
+		cout << "BinarySearchTree. Select i:Insert, r: remove, d:Display, e:NonrecInorder, f:preorder, g:postorder, h:copy and compare, q : Quit, s : split" << endl << "==>";
 		cin >> select;
 		switch (select)
 		{
@@ -554,7 +614,17 @@ int main(void)
 		case 'q':
 			cout << "Quit" << endl;
 			break;
-
+		case 's':
+			cout << "split current tree" << endl;
+			cout << "split key : ";
+			cin >> splitKey;
+			t.Split(splitKey, b, c, splitConfirm);
+			cout << "b : ";
+			b.inorder();
+			cout << endl << "c : ";
+			c.inorder();
+			cout << endl;
+			break;
 		default:
 			cout << "WRONG INPUT  " << endl;
 			cout << "Re-Enter" << endl;
