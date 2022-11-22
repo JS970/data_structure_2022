@@ -228,6 +228,11 @@ public:
 	void NonrecInorder();
 	void LevelOrder();
 	void Split(int i, Tree& b, Tree& c, int& x);
+	Tree* ThreeWayJoin(Tree* a, TreeNode* x, Tree* b);
+	Tree* TwoWayJoin(Tree* a, Tree* b);
+	void adjust();
+	int Height();
+	bool IsSkewed();
 	Tree* Copy(); //void Copy(Tree&);
 	TreeNode* InorderSucc(TreeNode*);
 };
@@ -553,6 +558,83 @@ void Tree::Split(int i, Tree& b, Tree& c, int& x)
 	return;
 }
 
+// have to a < x < b
+Tree* Tree::ThreeWayJoin(Tree* a, TreeNode* x, Tree* b)
+{
+	TreeNode* newNode = new TreeNode;
+	newNode->data = x->data;
+	newNode->LeftChild = a->root;
+	newNode->RightChild = b->root;
+
+	Tree* newTree = new Tree;
+	newTree->root = newNode;
+	return newTree;
+}
+
+// have to a < b
+Tree* Tree::TwoWayJoin(Tree* a, Tree* b)
+{
+	if (!a) return b;
+	if (!b) return a;
+
+	TreeNode midval;
+	TreeNode* p = a->root;
+	TreeNode* q = 0;
+	
+	while (p) // find a's biggest Node and Delete it
+	{
+		q = p;
+		p = p->RightChild;
+	}
+	midval.data = q->data;
+	a->Delete(q->data);
+	return ThreeWayJoin(a, &midval, b);
+}
+
+void Tree::adjust()
+{
+	Tree b;
+	Tree c;
+	int confirm;
+	if (IsSkewed() && (Height() > 2))
+	{
+		// Split(key value, b, c, confirm);
+		// configure split key value...
+		// TwoWayJoin(b, c);
+	}
+}
+
+int Tree::Height()
+{
+	Queue <TreeNode*> q;
+	TreeNode* CurrentNode = root;
+	int height = 1;
+	while (CurrentNode)
+	{
+		if (CurrentNode->LeftChild)
+		{
+			q.Add(CurrentNode->LeftChild);
+		}
+		if (CurrentNode->RightChild) 
+		{
+			q.Add(CurrentNode->RightChild);
+		}
+		CurrentNode = *q.Delete(CurrentNode);
+	}
+}
+
+bool Tree::IsSkewed()
+{
+	TreeNode* current = root;
+	TreeNode* next = 0;
+	while (current)
+	{
+		if (!(current->LeftChild) && (current->RightChild)) next = current->RightChild;
+		else if ((current->LeftChild) && !(current->RightChild)) next = current->LeftChild;
+		else return false;
+	}
+	return true;
+}
 
 int main(void)
 {
