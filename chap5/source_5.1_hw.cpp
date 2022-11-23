@@ -215,9 +215,10 @@ private:
 	void preorder(TreeNode*);
 	void postorder(TreeNode*);
 	TreeNode* copy(TreeNode*);
+	int height;
 public:
 	Tree(const Tree&);
-	Tree() { root = 0; };
+	Tree() { root = 0; height = 0; };
 
 	bool Insert(int);
 	int Delete(int);//임의 값 x를 delete하는 구현 실습
@@ -354,12 +355,15 @@ equivalent. Otherwise, it will return 1 */
 bool Tree::Insert(int x) {//binary search tree를 만드는 입력 => A + B * C을 tree로 만드는 방법: 입력 해결하는 알고리즘 작성 방법을 설계하여 구현
 	TreeNode* p = root;
 	TreeNode* q = 0;
+	int h = 0;
 	while (p) {
 		q = p;
 		if (x == p->data) return false;
 		if (x < p->data) p = p->LeftChild;
 		else p = p->RightChild;
+		h++;
 	}
+	height = (height < h) ? h : height;
 	p = new TreeNode;
 	p->LeftChild = p->RightChild = 0;
 	p->data = x;
@@ -593,34 +597,54 @@ Tree* Tree::TwoWayJoin(Tree* a, Tree* b)
 
 void Tree::adjust()
 {
-	Tree b;
-	Tree c;
-	int confirm;
+	Tree* b = new Tree;
+	Tree* c = new Tree;
+	TreeNode* currentNode = root;
 	if (IsSkewed() && (Height() > 2))
 	{
-		// Split(key value, b, c, confirm);
-		// configure split key value...
-		// TwoWayJoin(b, c);
+		for (int i = 0; i <= Height() / 2; i++)
+		{
+			if (currentNode->LeftChild) currentNode = currentNode->LeftChild;
+			else currentNode = currentNode->RightChild;
+		}
+		int newRootKey = currentNode->data;
+		int newRootKeyConfirm;
+		Split(newRootKey, *b, *c, newRootKeyConfirm);
+		if (Height() % 2)
+		{
+			b->height = Height() / 2 - 1;
+			c->height = Height() / 2;
+			cout << "height of b : " << b->height << endl;
+			cout << "height of c : " << c->height << endl;
+		}
+		else
+		{
+			b->height = Height() / 2 - 1;
+			c->height = Height() / 2 - 1;
+			cout << "height of b : " << b->height << endl;
+			cout << "height of c : " << c->height << endl;
+		}
+		TreeNode* newNode = new TreeNode;
+		newNode->data = newRootKey;
+		Tree* newTree = new Tree;
+		newTree->root = newNode;
+		
+		
+		if (b->root->data < c->root->data) newTree = ThreeWayJoin(b, newNode, c);
+		else newTree = ThreeWayJoin(c, newNode, b);
+		newTree->height = c->height + 1;
+		cout << "height of skewed tree : " << Height() << endl;
+		cout << "height of adjusted tree : " << newTree->Height() << endl;
+		cout << "adjusted tree inorder traversal : ";
+		newTree->inorder();
+		cout << endl;
+		
 	}
 }
 
 int Tree::Height()
 {
-	Queue <TreeNode*> q;
-	TreeNode* CurrentNode = root;
-	int height = 1;
-	while (CurrentNode)
-	{
-		if (CurrentNode->LeftChild)
-		{
-			q.Add(CurrentNode->LeftChild);
-		}
-		if (CurrentNode->RightChild) 
-		{
-			q.Add(CurrentNode->RightChild);
-		}
-		CurrentNode = *q.Delete(CurrentNode);
-	}
+	return height;
 }
 
 bool Tree::IsSkewed()
@@ -629,9 +653,12 @@ bool Tree::IsSkewed()
 	TreeNode* next = 0;
 	while (current)
 	{
-		if (!(current->LeftChild) && (current->RightChild)) next = current->RightChild;
+		if ((current->LeftChild) && (current->RightChild)) return false;
+		else if (!(current->LeftChild) && (current->RightChild)) next = current->RightChild;
 		else if ((current->LeftChild) && !(current->RightChild)) next = current->LeftChild;
-		else return false;
+		else break;
+
+		current = next;
 	}
 	return true;
 }
@@ -657,8 +684,15 @@ int main(void)
 			cout << "The number of items = ";
 			cin >> max;
 			for (int i = 0; i < max; i++) {
-				rnd = rand() / 100;
-				if (!t.Insert(rnd)) cout << "Insert Duplicated data" << endl;
+				cout << "Insert " << i+1 << "th member : ";
+				cin >> rnd;
+				// rnd = rand() / 100;
+				// if (!t.Insert(rnd)) cout << "Insert Duplicated data" << endl;
+				if (!t.Insert(rnd)) 
+				{
+					cout << "Insert Duplicated data" << endl;
+					i--;
+				}
 			}
 
 			break;
@@ -675,6 +709,12 @@ int main(void)
 		case 'd':
 			t.inorder();
 			cout << endl;
+			if (t.IsSkewed())
+			{
+				cout << "this tree is skewed Tree" << endl;
+				t.adjust();
+			}
+			cout << "level of this tree : " << t.Height() << endl;
 			break;
 		case 'e':
 			t.NonrecInorder();
