@@ -12,6 +12,7 @@ class ListNode
 	friend class ListIterator<Type>;
 private:
 	Type data;
+	int weight;
 	ListNode* link;
 	ListNode(Type);
 };
@@ -20,6 +21,8 @@ template <class Type>
 ListNode<Type>::ListNode(Type Default)
 {
 	data = Default;
+	// random weight for each nodes
+	weight = rand();
 	link = 0;
 }
 
@@ -169,9 +172,9 @@ public:
 	Graph(int vertices = 0) : n(vertices) { HeadNodes = new List<int>[n]; /* n linkedlists */ }
 	void BFS(int);
 	void InsertVertex(int startNode, int endNode);
-	void Setup();
 	void displayAdjacencyLists();
 	void DFS(int v);
+	void KruskalMST(Graph* graph);
 private:
 	List<int>* HeadNodes; // int type linkedlist array
 	int n; // number of node(vertices)
@@ -271,6 +274,13 @@ void Graph::_DFS(const int v)
 		if (li.NextNotNull()) w = *li.Next();
 		else return;
 	}
+}
+
+void Graph::KruskalMST(Graph* graph)
+{
+	// maximum edges - fully connected graph
+	int* edges = new int(n*n);
+
 }
 
 int main(void)
