@@ -14,10 +14,11 @@ class ListNode
 {
 	friend class List<Type>;
 	friend class ListIterator<Type>;
+	friend class Graph;
+	ListNode(Type);
 private:
 	Type data;
 	ListNode* link;
-	ListNode(Type);
 };
 
 template <class Type>
@@ -66,6 +67,7 @@ void List<Type>::Delete(Type k)
 template <class Type>
 class ListIterator
 {
+	friend class Graph;
 public:
 	ListIterator(const List<Type>& l) : list(l) { current = l.first; }
 	Type* First();
@@ -172,10 +174,13 @@ class Edges
 	friend class Graph;
 	friend class MinHeap;
 public:
-	Edges(int v1 = -1, int v2 = -1) { vertex1 = v1, vertex2 = v2, weight = rand(); }
+	Edges(ListNode<int>* v1 = 0, ListNode<int>* v2 = 0) 
+	{ 
+		vertex1 = v1; vertex2 = v2; weight = rand();
+	}
 private:
-	int vertex1;
-	int vertex2;
+	ListNode<int>* vertex1;
+	ListNode<int>* vertex2;
 	int weight;
 };
 
@@ -188,7 +193,7 @@ public:
 	void InsertVertex(int startNode, int endNode);
 	void displayAdjacencyLists();
 	void DFS(int v);
-	void KruskalMST(Graph* graph);
+	void KruskalMST();
 private:
 	List<int>* HeadNodes; // int type linkedlist array
 	int n; // number of node(vertices)
@@ -198,32 +203,32 @@ private:
 	void _DFS(const int v);
 };
 
-Graph::Graph(int vertices = 0)
+Graph::Graph(int vertices = 1)
 {
 	n = vertices;
 	HeadNodes = new List<int>[n];
-	e = new Edges[n * n + 1]; // when it comes to maximum edges...
 	int j = 0; // edge index
 	int count = 0;
 	bool flag = true;
-	for (int i = 0; i < n; i++)
+
+	// edge generation, set to 6(could set this value random using rand())
+	ne = rand() % (6);
+	e = new Edges[ne];
+	for (int i = 0; i < ne; i++)
 	{
-		ListIterator<int>* li = new ListIterator<int>(HeadNodes[i]);
-		while (li->NotNull())
-		{
-			int v1 = *li->First();
-			int v2 = *li->Next();
-			for (int k = 0; k < j; k++)
-			{
-				if (e[k].vertex2 == v1 && e[k].vertex1 == v2)
-					flag = false;
-			}
-			if (flag)
-				e[j++] = Edges(v1, v2);
-			flag = true;
-		}
+		// weight initialization
+		e[i].weight = rand() % 10;
+		int v1 = rand() % n;
+		int v2 = rand() % n;
+		// add verteces to edge
+		e[i].vertex1 = new ListNode<int>(v1);
+		e[i].vertex2 = new ListNode<int>(v2);
+		HeadNodes[v1].Insert(v2);
+		HeadNodes[v2].Insert(v1);
+		cout << "e[" << i << "].vertex1->data : " << e[i].vertex1->data << endl;
+		cout << "e[" << i << "].vertex2->data : " << e[i].vertex2->data << endl;
 	}
-	ne = j - 1;
+
 }
 
 void Graph::displayAdjacencyLists()
@@ -385,7 +390,7 @@ Edges* MinHeap::DeleteMin(Edges& x)
 		return 0;
 	}
 	x = heap[1];
-	int k = heap[n].weight;
+	Edges k = heap[n];
 	n--;
 
 	for (i = 1, j = 2; j <= n;)
@@ -393,7 +398,7 @@ Edges* MinHeap::DeleteMin(Edges& x)
 		if (j < n)
 			if (heap[j].weight > heap[j + 1].weight) j++;
 		// j points to the smaller child
-		if (k <= heap[j].weight) break;
+		if (k.weight <= heap[j].weight) break;
 		heap[i] = heap[j];
 		i = j;
 		j *= 2;
@@ -452,6 +457,7 @@ void Sets::WeightedUnion(int i, int j)
 		parent[j] = i;
 		parent[i] = temp;
 	}
+	cout << "vertex[" << i << "]"<< "---" << "vertex[" << j << "]" << endl;
 }
 
 int Sets::CollapsingFind(int i)
@@ -469,15 +475,22 @@ int Sets::CollapsingFind(int i)
 
 void Sets::display()
 {
-	cout << "display:index=  ";
-	for (int i = 1; i <= n; i++) printf("%2d ", i);
+	cout << "display:index= ";
+	for (int i = 1; i <= n; i++) printf("%3d ", i);
 	cout << endl;
-	cout << "display: value= ";
-	for (int i = 1; i <= n; i++) printf("%2d ", parent[i]);
+	cout << "display:value= ";
+	for (int i = 1; i <= n; i++) printf("%3d ", parent[i]);
 	cout << endl;
 }
 
-void Graph::KruskalMST(Graph* graph)
+bool Isin(int arr[], int sz, int check)
+{
+	for (int i = 0; i < sz; i++)
+		if (check == arr[i]) return true;
+	return false;
+}
+
+void Graph::KruskalMST()
 {
 	MinHeap* mh = new MinHeap();
 	for (int i = 0; i < ne; i++)
@@ -485,14 +498,58 @@ void Graph::KruskalMST(Graph* graph)
 
 	// Spanning Tree Generating...
 	Sets s(ne);
-	for (int i = 0; i < n; i++)
+	int j = 0; // vertices index
+	int weightvalue = 0;
+
+	// Initial edge;
+	Edges* temp = mh->DeleteMin(e[0]);
+	int* vertices = new int[n * n + 1]; // temp->v1->data, temp->v2->data;
+	int v1 = temp->vertex1->data;
+	int v2 = temp->vertex2->data;
+	vertices[j++] = v1; 
+	vertices[j++] = v2;
+	int initialedge = temp->weight;
+	s.WeightedUnion(e[0].vertex2->data, e[0].vertex1->data);
+
+	// repeated vertice checking
+	// if both vertice is repeated graph become cyclic...
+	for (int i = 1; i < ne; i++)
 	{
-		
+		temp = mh->DeleteMin(e[i]);
+		// cyclic graph
+		bool v1in = Isin(vertices, j, temp->vertex1->data);
+		bool v2in = Isin(vertices, j, temp->vertex2->data);
+		if (v1in && v2in)
+			;
+		else
+		{
+			// add vertices belongs to current edge
+			// add current edge to sets
+			if (v1in)
+			{
+				vertices[j++] = temp->vertex2->data;
+			}
+			else if (v2in)
+			{
+				vertices[j++] = temp->vertex1->data;
+			}
+			else
+			{
+				vertices[j++] = temp->vertex1->data;
+				vertices[j++] = temp->vertex2->data;
+			}
+			s.WeightedUnion(e[i].vertex2->data, e[i].vertex1->data);
+		}
 	}
 }
 
 int main(void)
 {
+	cout << "[Edges and connected vertices]" << endl;
+	Graph g(5); // vertex : 5, edge weight : random, number of edges : random
+	cout << endl;
+	cout << "[MST drived by Kruskal Algorithm]" << endl;
+	g.KruskalMST();
 
 	return 0;
 }
