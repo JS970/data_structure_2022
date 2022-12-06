@@ -18,10 +18,13 @@
     <ClCompile Include="ArraySet.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="hw_8.cpp">
+    <ClCompile Include="hw_8_kruskal.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="graph.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="hw_8_prim.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
