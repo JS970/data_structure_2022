@@ -1,189 +1,40 @@
-//소스코드 6.2: Minial Spanning Tree
-// 6.4 minimal spanning tree:: Kruskal’s source code
-// min heap, set 사용하여 MST 구현
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <iostream>
+
 using namespace std;
 const int HeapSize = 100;
-
-enum Boolean { FALSE, TRUE };
-
-template <class Type>
-class Element {
-public:
-	Type key;
-};
-
-template <class Type>
-class MaxPQ {
-public:
-	virtual void Insert(const Element<Type>&) = 0;
-	virtual Element<Type>* DeleteMax(Element<Type>&) = 0;
-};
-
-template <class Type>
-class MaxHeap : public MaxPQ<Type> {
-public:
-	MaxHeap(int sz = HeapSize)
-	{
-		MaxSize = sz; n = 0;
-		heap = new Element<Type>[MaxSize + 1]; // Don't want to use heap[0]
-	};
-	void display();
-	void Insert(const Element<Type>& x);
-	Element<Type>* DeleteMax(Element<Type>&);
-private:
-	Element<Type>* heap;
-	int n; // current size of MaxHeap
-	int MaxSize; // Maximum allowable size of MaxHeap
-
-	void HeapEmpty() { cout << "Heap Empty" << "\n"; };
-	void HeapFull() { cout << "Heap Full"; };
-};
-
-template <class Type>
-void MaxHeap<Type>::display()
-{
-	int i;
-	cout << "MaxHeap:: (i, heap[i].key): ";
-	for (i = 1; i <= n; i++) cout << "(" << i << ", " << heap[i].key << ") ";
-	cout << "\n";
-}
-
-template <class Type>
-void MaxHeap<Type>::Insert(const Element<Type>& x)
-{
-	int i;
-	if (n == MaxSize) { HeapFull(); return; }
-	n++;
-	for (i = n; 1; ) {
-		if (i == 1) break; // at root
-		if (x.key <= heap[i / 2].key) break;
-		// move from parent to i
-		heap[i] = heap[i / 2];
-		i /= 2;
-	}
-	heap[i] = x;
-}
-
-template <class Type>
-Element<Type>* MaxHeap<Type>::DeleteMax(Element<Type>& x)
-{
-	int i, j;
-	if (!n) { HeapEmpty(); return 0; }
-	x = heap[1]; Element<Type> k = heap[n]; n--;
-
-	for (i = 1, j = 2; j <= n; )
-	{
-		if (j < n) if (heap[j].key < heap[j + 1].key) j++;
-		// j points to the larger child
-		if (k.key >= heap[j].key) break;
-		heap[i] = heap[j];
-		i = j; j *= 2;
-	}
-	heap[i] = k;
-	return &x;
-}
-
-class Sets {
-public:
-	Sets(int);
-	void display();
-	void SimpleUnion(int, int);
-	int SimpleFind(int);
-	void WeightedUnion(int, int);
-	int CollapsingFind(int);
-private:
-	int* parent;
-	int n;
-};
-
-Sets::Sets(int sz = HeapSize)
-{
-	n = sz;
-	parent = new int[sz + 1]; // Don't want to use parent[0]
-	for (int i = 1; i <= n; i++) parent[i] = -1;  // 0 for Simple versions
-}
-
-void Sets::SimpleUnion(int i, int j)
-// Replace the disjoint sets with roots i and j, i != j with their union
-{
-	parent[j] = i;
-}
-
-int Sets::SimpleFind(int i)
-// Find the root of the tree containing element i
-{
-	while (parent[i] > 0) i = parent[i];
-	return i;
-}
-
-void Sets::WeightedUnion(int i, int j)
-// Union sets with roots i and j, i != j, using the weighting rule.
-// parent[i]~=~-count[i] and parent[i]~=~-count[i].
-{
-	int temp = parent[i] + parent[j];
-	if (parent[i] > parent[j]) { // i has fewer nodes
-		parent[i] = j;
-		parent[j] = temp;
-	}
-	else { // j has fewer nodes
-		parent[j] = i;
-		parent[i] = temp;
-	}
-}
-
-int Sets::CollapsingFind(int i)
-// Find the root of the tree containing element i.
-// Use the collapsing rule to collapse all nodes from @i@ to the root
-{
-	int r;
-	for (r = i; parent[r] > 0; r = parent[r]); // find root
-	while (i != r) {
-		int s = parent[i];
-		parent[i] = r;
-		i = s;
-	}
-	return r;
-}
-
-void Sets::display()
-{
-	cout << "display:index= ";
-	for (int i = 1; i <= n; i++) cout << " " << i;
-	cout << "\n";
-	cout << "display: value= ";
-	for (int i = 1; i <= n; i++) cout << " " << parent[i];
-	cout << "\n";
-}
 
 template <class Type> class List;
 template <class Type> class ListIterator;
 
 template <class Type>
-class ListNode {
+class ListNode
+{
 	friend class List<Type>;
 	friend class ListIterator<Type>;
+	friend class Graph;
+	ListNode(Type);
 private:
 	Type data;
 	ListNode* link;
-	ListNode(Type);
 };
 
 template <class Type>
 ListNode<Type>::ListNode(Type Default)
 {
 	data = Default;
+	// random weight for each nodes
 	link = 0;
 }
 
 template <class Type>
-class List {
+class List
+{
 	friend class ListIterator<Type>;
 public:
-	List() { first = 0; };
+	List() { first = 0; }
 	void Insert(Type);
 	void Delete(Type);
 private:
@@ -202,7 +53,8 @@ template <class Type>
 void List<Type>::Delete(Type k)
 {
 	ListNode<Type>* previous = 0;
-	for (ListNode<Type>* current = first; current && current->data != k;
+	ListNode<Type>* current = first;
+	for (current = first; current && current->data != k;
 		previous = current, current = current->link);
 	if (current)
 	{
@@ -213,7 +65,9 @@ void List<Type>::Delete(Type k)
 }
 
 template <class Type>
-class ListIterator {
+class ListIterator
+{
+	friend class Graph;
 public:
 	ListIterator(const List<Type>& l) : list(l) { current = l.first; }
 	Type* First();
@@ -226,13 +80,14 @@ private:
 };
 
 template <class Type>
-Type* ListIterator<Type>::First() {
-	if (current) return &current->data;
+Type* ListIterator<Type>::First()
+{
+	if (list.first) return &list.first->data;
 	else return 0;
 }
-
 template <class Type>
-Type* ListIterator<Type>::Next() {
+Type* ListIterator<Type>::Next()
+{
 	current = current->link;
 	return &current->data;
 }
@@ -251,7 +106,7 @@ bool ListIterator<Type>::NextNotNull()
 	else return false;
 }
 
-//template <class Type>
+// char type list '<<' operator overloading
 ostream& operator<<(ostream& os, List<char>& l)
 {
 	ListIterator<char> li(l);
@@ -264,7 +119,8 @@ ostream& operator<<(ostream& os, List<char>& l)
 
 class Queue;
 
-class QueueNode {
+class QueueNode
+{
 	friend class Queue;
 private:
 	int data;
@@ -273,114 +129,175 @@ private:
 	{
 		data = def;
 		link = l;
-	};
+	}
 };
 
-class Queue {
-private:
-	QueueNode* front, * rear;
-	void QueueEmpty() {};
+class Queue
+{
 public:
-	Queue() { front = rear = 0; };
+	Queue() { front = rear = 0; }
 	void Insert(int);
 	int* Delete(int&);
-	bool IsEmpty() { if (front == 0) return true; else return false; };
+	bool IsEmpty() { if (front == 0) return true; else return false; }
+private:
+	QueueNode* front;
+	QueueNode* rear;
+	void QueueEmpty() { cout << "Queue Empty" << endl; }
 };
 
 void Queue::Insert(int y)
 {
-	if (front == 0) front = rear = new QueueNode(y, 0); // empty queue
-	else rear = rear->link = new QueueNode(y, 0); // update \fIrear\fR
+	if (front == 0) front = rear = new QueueNode(y, 0); // Empty queue
+	else rear = rear->link = new QueueNode(y, 0); // update rear
 }
 
 int* Queue::Delete(int& retvalue)
-// delete the first node in queue and return a pointer to its data
 {
-	if (front == 0) { QueueEmpty(); return 0; };
+	if (front == 0)
+	{
+		QueueEmpty();
+		return 0;
+	}
 	QueueNode* x = front;
-	retvalue = front->data; // get data
-	front = x->link;      // delete front node
-	if (front == 0) rear = 0; // queue becomes empty after deletion
-	delete x; // free the node
+	retvalue = front->data;
+	front = x->link;
+	if (front == 0) rear = 0;
+
+	delete x;
 	return &retvalue;
 }
 
+class Edges
+{
+	friend class Graph;
+	friend class MinHeap;
+public:
+	Edges(ListNode<int>* v1 = 0, ListNode<int>* v2 = 0)
+	{
+		vertex1 = v1; vertex2 = v2; weight = rand();
+	}
+private:
+	ListNode<int>* vertex1;
+	ListNode<int>* vertex2;
+	int weight;
+};
 
 class Graph
 {
-private:
-	List<int>* HeadNodes;
-	int n;
-	bool* visited;
-
-	void _DFS(const int v);
 public:
-	Graph(int vertices = 0) : n(vertices) {
-		HeadNodes = new List<int>[n];
-	};
+	Graph(bool, int);
+	Graph(int vertices);
 	void BFS(int);
-	void InsertVertex(int startNode, int endNode, int weight);
-	void Setup();
-
+	bool InsertVertex(int startNode, int endNode);
 	void displayAdjacencyLists();
-
-
 	void DFS(int v);
-
+	void Prim(Graph& g);
+private:
+	List<int>* HeadNodes; // int type linkedlist array
+	int n; // number of node(vertices)
+	Edges* e; // edges array
+	int ne; // number of edges
+	bool* visited; // visited array
+	void _DFS(const int v);
 };
 
-void Graph::displayAdjacencyLists() {
-	for (int i = 0; i < n; i++) {
-		//HeadNodes[i];
+Graph::Graph(bool overloading, int nodes)
+{
+	n = nodes;
+	HeadNodes = new List<int>[n];
+	e = new Edges[n - 1];
+}
+
+Graph::Graph(int vertices = 1)
+{
+	n = vertices;
+	HeadNodes = new List<int>[n];
+	int j = 0; // edge index
+	int count = 0;
+	bool flag = true;
+
+	// edge generation, set to 6(could set this value random using rand())
+	cout << "input number of edges to generate graph: ";
+	cin >> ne;
+	e = new Edges[ne];
+	for (int i = 0; i < ne; i++)
+	{
+		// weight initialization
+		e[i].weight = rand() % 10;
+		int v1 = rand() % (n);
+		int v2 = rand() % (n);
+		// add verteces to edge
+		e[i].vertex1 = new ListNode<int>(v1);
+		e[i].vertex2 = new ListNode<int>(v2);
+		HeadNodes[v1].Insert(v2);
+		HeadNodes[v2].Insert(v1);
+		cout << "e[" << i << "].vertex1->data : " << e[i].vertex1->data << endl;
+		cout << "e[" << i << "].vertex2->data : " << e[i].vertex2->data << endl;
+	}
+
+}
+
+void Graph::displayAdjacencyLists()
+{
+	for (int i = 0; i < n; i++)
+	{
+		// HeadNodes linkedlist iterator
 		ListIterator<int> iter(HeadNodes[i]);
-		if (!iter.NotNull()) {
+		if (!iter.NotNull())
+		{
 			cout << i << " -> null" << endl;
 			continue;
 		}
 		cout << i;
-		for (int* first = iter.First(); iter.NotNull(); first = iter.Next()) {
+		for (int* first = iter.First(); iter.NotNull(); first = iter.Next())
 			cout << " -> " << (*first);
-		}
 		cout << endl;
 	}
 }
 
-void Graph::InsertVertex(int start, int end, int weight) {
-	if (start < 0 || start >= n || end < 0 || end >= n) {
+bool Graph::InsertVertex(int start, int end)
+{
+	if (start < 0 || start >= n || end < 0 || end >= n)
+	{
 		cout << "the start node number is out of bound.";
 		throw "";
 	}
-	//check if already existed.
+	// check if already existed
 	ListIterator<int> iter(HeadNodes[start]);
-	for (int* first = iter.First(); iter.NotNull(); first = iter.Next()) {
-		if (*first == end) return;
-	}
+	for (int* first = iter.First(); iter.NotNull(); first = iter.Next())
+		if (*first == end) return false;
 
-	HeadNodes[start].Insert(end, weight);
-	HeadNodes[end].Insert(start, weight);
+	HeadNodes[start].Insert(end);
+	HeadNodes[end].Insert(start);
+	n++;
+	return true;
 }
 
 void Graph::BFS(int v)
 {
-	visited = new bool[n]; //  visited  is declared as a  Boolean \(** data member of  Graph .
-	for (int i = 0; i < n; i++) visited[i] = false; // initially, no vertices have been visited
+	visited = new bool[n];
+	for (int i = 0; i < n; i++)
+		visited[i] = false;
 
 	visited[v] = true;
 	cout << v << ",";
 	Queue q;
 	q.Insert(v);
 
-	while (!q.IsEmpty()) {
+	while (!q.IsEmpty())
+	{
 		v = *q.Delete(v);
 		ListIterator<int> li(HeadNodes[v]);
 		if (!li.NotNull()) continue;
 		int w = *li.First();
-		while (1) {
-			if (!visited[w]) {
+		while (1)
+		{
+			if (!visited[w])
+			{
 				q.Insert(w);
 				visited[w] = true;
 				cout << w << ",";
-			};
+			}
 			if (li.NextNotNull())
 				w = *li.Next();
 			else break;
@@ -389,40 +306,256 @@ void Graph::BFS(int v)
 	delete[] visited;
 }
 
-// Driver
 void Graph::DFS(int v)
 {
-	visited = new bool[n]; //  visited  is declared as a  bool \(** data member of  Graph .
+	visited = new bool[n];
 	for (int i = 0; i < n; i++)
-		visited[i] = false; // initially, no vertices have been visited
+		visited[i] = false;
 
-	_DFS(v); // start search at vertex 0
+	_DFS(v);
 	delete[] visited;
-
 }
 
-// Workhorse
 void Graph::_DFS(const int v)
-//  visit all previously unvisited vertices that are reachable from vertex v
 {
 	visited[v] = true;
 	cout << v << ", ";
 	ListIterator<int> li(HeadNodes[v]);
 	if (!li.NotNull()) return;
 	int w = *li.First();
-	while (1) {
+	while (1)
+	{
 		if (!visited[w]) _DFS(w);
 		if (li.NextNotNull()) w = *li.Next();
 		else return;
 	}
 }
 
-
-
-// The main function to construct MST using Kruskal's algorithm
-void KruskalMST(struct Graph* graph)
+// Min Priority Queue
+class MinPQ
 {
+public:
+	virtual void Insert(const Edges&) = 0;
+	virtual Edges* DeleteMin(Edges&) = 0;
+};
 
+// Min Heap
+class MinHeap : public MinPQ
+{
+public:
+	MinHeap(int sz = HeapSize)
+	{
+		MaxSize = sz; n = 0;
+		heap = new Edges[MaxSize + 1]; // Don't want to use heap[0]
+	}
+	void display();
+	void Insert(const Edges& x);
+	Edges* DeleteMin(Edges& x);
+private:
+	Edges* heap;
+	int n; // current size of MinHeap
+	int MaxSize; // Minimum size of MinHeap
+	void HeapEmpty() { cout << "Heap Empty" << endl; }
+	void HeapFull() { cout << "Heap Full" << endl; }
+};
+
+void MinHeap::display()
+{
+	int i;
+	cout << "MinHeap:: (i, heap[i].key): ";
+	for (i = 1; i <= n; i++) cout << "(" << i << ", " << heap[i].weight << ") ";
+	cout << endl;
+}
+
+void MinHeap::Insert(const Edges& x)
+{
+	int i;
+	if (n == MaxSize)
+	{
+		HeapFull();
+		return;
+	}
+	n++;
+	for (i = n; 1;)
+	{
+		if (i == 1) break; // at root
+		if (x.weight >= heap[i / 2].weight) break;
+		// move from parent to i
+		heap[i] = heap[i / 2];
+		i /= 2;
+	}
+	heap[i] = x;
+}
+
+Edges* MinHeap::DeleteMin(Edges& x)
+{
+	int i, j;
+	if (!n)
+	{
+		HeapEmpty();
+		return 0;
+	}
+	x = heap[1];
+	Edges k = heap[n];
+	n--;
+
+	for (i = 1, j = 2; j <= n;)
+	{
+		if (j < n)
+			if (heap[j].weight > heap[j + 1].weight) j++;
+		// j points to the smaller child
+		if (k.weight <= heap[j].weight) break;
+		heap[i] = heap[j];
+		i = j;
+		j *= 2;
+	}
+	heap[i] = k;
+	return &x;
+}
+
+class Sets
+{
+public:
+	Sets(int);
+	void display();
+	void SimpleUnion(int, int);
+	int SimpleFind(int);
+	void WeightedUnion(int, int);
+	int CollapsingFind(int);
+private:
+	int* parent;
+	int n;
+};
+
+Sets::Sets(int sz = HeapSize)
+{
+	n = sz;
+	parent = new int[sz + 1]; // Don't want to use parent[0]
+	for (int i = 1; i <= n; i++)
+		parent[i] = -1;
+}
+
+// Replace the disjoint sets with roots i and j, i != j with their union
+void Sets::SimpleUnion(int i, int j)
+{
+	parent[j] = i;
+}
+
+// Find the root of the tree containing element i
+int Sets::SimpleFind(int i)
+{
+	while (parent[i] > 0) i = parent[i];
+	return i;
+}
+
+void Sets::WeightedUnion(int i, int j)
+{
+	int temp = parent[i] + parent[j];
+	if (parent[i] > parent[j])
+	{
+		// i has fewer nodes
+		parent[i] = j;
+		parent[j] = temp;
+	}
+	else
+	{
+		// j has fewer nodes
+		parent[j] = i;
+		parent[i] = temp;
+	}
+	cout << "vertex[" << i << "]" << "---" << "vertex[" << j << "]" << endl;
+}
+
+int Sets::CollapsingFind(int i)
+{
+	int r;
+	for (r = i; parent[r] > 0; r = parent[r]); // find root
+	while (i != r)
+	{
+		int s = parent[i];
+		parent[i] = r;
+		i = s;
+	}
+	return r;
+}
+
+void Sets::display()
+{
+	cout << "display:index= ";
+	for (int i = 1; i <= n; i++) printf("%3d ", i);
+	cout << endl;
+	cout << "display:value= ";
+	for (int i = 1; i <= n; i++) printf("%3d ", parent[i]);
+	cout << endl;
+}
+
+bool Isin(int arr[], int sz, int check)
+{
+	for (int i = 0; i < sz; i++)
+		if (check == arr[i]) return true;
+	return false;
+}
+
+void Graph::Prim(Graph& g)
+{
+	int small;
+	int headindex;
+	int headcount;
+	int j;
+	int* vertexarr = new int[g.n];
+	int idx = 0; // count for vertexarr
+	for (int i = 0; i < g.n;)
+	{
+		ListIterator<int>* li = 0;
+		headindex = 0;
+		headcount = 0;
+		small = 9999;
+		for (j = 0; j < i; j++)
+		{
+			li = new ListIterator<int>(g.HeadNodes[j]);
+			while (li->NotNull())
+			{
+				headindex++;
+				li->Next();
+			}
+		}
+		li = new ListIterator<int>(g.HeadNodes[i]);
+		while (li->NotNull())
+		{
+			headcount++;
+			li->Next();
+		}
+		vertexarr[idx++] = i;
+		bool v1in;
+		bool v2in;
+		for (j = headindex; j < headindex + headcount - 1; j++)
+		{
+			if (j > g.ne) j /= 2;
+			// edge index error TODO FIX
+			if (g.e[j].vertex1->data != g.e[j].vertex2->data)
+			{
+				v1in = Isin(vertexarr, idx, g.e[j].vertex1->data);
+				v2in = Isin(vertexarr, idx, g.e[j].vertex2->data);
+				if (v1in || v2in)
+					small = (small < g.e[j].weight) ? small : g.e[j].weight;
+			}
+		}
+
+		for (j = 0; j < headindex + headcount; j++)
+			if (small == g.e[j].weight) break;
+
+		cout << "vertex1 : " << g.e[j].vertex1->data << " vertex2 : " << g.e[j].vertex2->data << endl;
+		// start vertex, next vertex
+		if (InsertVertex(g.e[j].vertex1->data, g.e[j].vertex2->data))
+		{
+			// move to connected vertex
+			i = (g.e[j].vertex1->data < g.e[j].vertex2->data) ? g.e[j].vertex2->data : g.e[j].vertex1->data;
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
 // Driver program to test above functions
@@ -436,34 +569,19 @@ int main(void)
 
 	/* Let us create following weighted graph */
 	struct Graph graph(n);
-	Graph* spanningTree = nullptr;
+	Graph* spanningTree = new Graph(false, n);
 	while (select != '0')
 	{
-		cout << "\nSelect command 1: Add edges and Weight, 2: Display Adjacency Lists, 3: spanningTree, 4: Quit => ";
+		cout << "\n1: Display Adjacency Lists, 2: spanningTree, 4: Quit => ";
 		cin >> select;
 		switch (select) {
 		case 1:
-			cout << "Add an edge: " << endl;
-			cout << "--------Input start node: ";
-			cin >> start;
-			cout << "--------Input  destination  node: ";
-			cin >> end;
-			if (start < 0 || start >= n || end < 0 || end >= n) {
-				cout << "the input node is out of bound." << endl;
-				break;
-			}
-			cout << "--------Input  weight: ";
-			cin >> weight;
-
-			graph.InsertVertex(start, end, weight);
-			break;
-		case 2:
 			//display
 			graph.displayAdjacencyLists();
 			break;
-		case 3:
+		case 2:
 			cout << "\nSpanningTree - Prim's algorithm: " << endl;
-			spanningTree = KruskalMST(&graph);
+			spanningTree->Prim(graph);
 			if (spanningTree) {
 				spanningTree->displayAdjacencyLists();
 			}
