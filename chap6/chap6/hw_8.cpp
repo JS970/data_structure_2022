@@ -16,7 +16,6 @@ class ListNode
 	friend class ListIterator<Type>;
 private:
 	Type data;
-	int weight;
 	ListNode* link;
 	ListNode(Type);
 };
@@ -26,7 +25,6 @@ ListNode<Type>::ListNode(Type Default)
 {
 	data = Default;
 	// random weight for each nodes
-	weight = rand();
 	link = 0;
 }
 
@@ -71,10 +69,7 @@ class ListIterator
 public:
 	ListIterator(const List<Type>& l) : list(l) { current = l.first; }
 	Type* First();
-	int* FirstWeight();
-	Type* Currentdata();
 	Type* Next();
-	int* NextWeight();
 	bool NotNull();
 	bool NextNotNull();
 private:
@@ -87,35 +82,14 @@ private:
 template <class Type>
 Type* ListIterator<Type>::First()
 {
-	if (current) return &current->data;
+	if (list.first) return &list.first->data;
 	else return 0;
 }
-
-template <class Type>
-int* ListIterator<Type>::FirstWeight()
-{
-	if (current) return &current->weight;
-	else return 0;
-}
-
-template <class Type>
-Type* ListIterator<Type>::Currentdata()
-{
-	return &current->data;
-}
-
 template <class Type>
 Type* ListIterator<Type>::Next()
 {
 	current = current->link;
 	return &current->data;
-}
-
-template <class Type>
-int* ListIterator<Type>::NextWeight()
-{
-	current = current->link;
-	return &current->weight;
 }
 
 template <class Type>
@@ -193,10 +167,23 @@ int* Queue::Delete(int& retvalue)
 	return &retvalue;
 }
 
+class Edges
+{
+	friend class Graph;
+	friend class MinHeap;
+public:
+	Edges(int v1 = -1, int v2 = -1) { vertex1 = v1, vertex2 = v2, weight = rand(); }
+private:
+	int vertex1;
+	int vertex2;
+	int weight;
+};
+
 class Graph
 {
 public:
-	Graph(int vertices = 0) : n(vertices) { HeadNodes = new List<int>[n]; /* n linkedlists */ }
+	Graph(int vertices);
+
 	void BFS(int);
 	void InsertVertex(int startNode, int endNode);
 	void displayAdjacencyLists();
@@ -205,9 +192,39 @@ public:
 private:
 	List<int>* HeadNodes; // int type linkedlist array
 	int n; // number of node(vertices)
+	Edges* e; // edges array
+	int ne; // number of edges
 	bool* visited; // visited array
 	void _DFS(const int v);
 };
+
+Graph::Graph(int vertices = 0)
+{
+	n = vertices;
+	HeadNodes = new List<int>[n];
+	e = new Edges[n * n + 1]; // when it comes to maximum edges...
+	int j = 0; // edge index
+	int count = 0;
+	bool flag = true;
+	for (int i = 0; i < n; i++)
+	{
+		ListIterator<int>* li = new ListIterator<int>(HeadNodes[i]);
+		while (li->NotNull())
+		{
+			int v1 = *li->First();
+			int v2 = *li->Next();
+			for (int k = 0; k < j; k++)
+			{
+				if (e[k].vertex2 == v1 && e[k].vertex1 == v2)
+					flag = false;
+			}
+			if (flag)
+				e[j++] = Edges(v1, v2);
+			flag = true;
+		}
+	}
+	ne = j - 1;
+}
 
 void Graph::displayAdjacencyLists()
 {
@@ -303,56 +320,43 @@ void Graph::_DFS(const int v)
 	}
 }
 
-template <class Type>
-class Element
-{
-public:
-	Type key;
-	Element() { }
-	Element(Type key) : key(key) { }
-};
-
 // Min Priority Queue
-template <class Type>
 class MinPQ
 {
 public:
-	virtual void Insert(const Element<Type>&) = 0;
-	virtual Element<Type>* DeleteMin(Element<Type>&) = 0;
+	virtual void Insert(const Edges&) = 0;
+	virtual Edges* DeleteMin(Edges&) = 0;
 };
 
 // Min Heap
-template <class Type>
-class MinHeap : public MinPQ<Type>
+class MinHeap : public MinPQ
 {
 public:
 	MinHeap(int sz = HeapSize)
 	{
 		MaxSize = sz; n = 0;
-		heap = new Element<Type>[MaxSize + 1]; // Don't want to use heap[0]
+		heap = new Edges[MaxSize + 1]; // Don't want to use heap[0]
 	}
 	void display();
-	void Insert(const Element<Type>& x);
-	Element<Type>* DeleteMin(Element<Type>& x);
+	void Insert(const Edges& x);
+	Edges* DeleteMin(Edges& x);
 private:
-	Element<Type>* heap;
+	Edges* heap;
 	int n; // current size of MinHeap
 	int MaxSize; // Minimum size of MinHeap
 	void HeapEmpty() { cout << "Heap Empty" << endl; }
 	void HeapFull() { cout << "Heap Full" << endl; }
 };
 
-template <class Type>
-void MinHeap<Type>::display()
+void MinHeap::display()
 {
 	int i;
 	cout << "MinHeap:: (i, heap[i].key): ";
-	for (i = 1; i <= n; i++) cout << "(" << i << ", " << heap[i].key << ") ";
+	for (i = 1; i <= n; i++) cout << "(" << i << ", " << heap[i].weight << ") ";
 	cout << endl;
 }
 
-template <class Type>
-void MinHeap<Type>::Insert(const Element<Type>& x)
+void MinHeap::Insert(const Edges& x)
 {
 	int i;
 	if (n == MaxSize)
@@ -364,7 +368,7 @@ void MinHeap<Type>::Insert(const Element<Type>& x)
 	for (i = n; 1;)
 	{
 		if (i == 1) break; // at root
-		if (x.key >= heap[i / 2].key) break;
+		if (x.weight >= heap[i / 2].weight) break;
 		// move from parent to i
 		heap[i] = heap[i / 2];
 		i /= 2;
@@ -372,8 +376,7 @@ void MinHeap<Type>::Insert(const Element<Type>& x)
 	heap[i] = x;
 }
 
-template <class Type>
-Element<Type>* MinHeap<Type>::DeleteMin(Element<Type>& x)
+Edges* MinHeap::DeleteMin(Edges& x)
 {
 	int i, j;
 	if (!n)
@@ -382,15 +385,15 @@ Element<Type>* MinHeap<Type>::DeleteMin(Element<Type>& x)
 		return 0;
 	}
 	x = heap[1];
-	Element<Type> k = heap[n];
+	int k = heap[n].weight;
 	n--;
 
 	for (i = 1, j = 2; j <= n;)
 	{
 		if (j < n)
-			if (heap[j].key > heap[j + 1].key) j++;
+			if (heap[j].weight > heap[j + 1].weight) j++;
 		// j points to the smaller child
-		if (k.key <= heap[j].key) break;
+		if (k <= heap[j].weight) break;
 		heap[i] = heap[j];
 		i = j;
 		j *= 2;
@@ -476,38 +479,16 @@ void Sets::display()
 
 void Graph::KruskalMST(Graph* graph)
 {
-	// maximum edges - fully connected graph
-	int* edges = new int[n * n + 1];
-	int j = 0; // edge index (containing cyclic edges either)
-	for (int i = 0; i < n; i++)
-	{
-		ListIterator<int>* li = new ListIterator<int>(HeadNodes[i]);
-		while (li->NotNull())
-		{
-			edges[j++] = *li->NextWeight();
-		}
-	}
-
-	// MinHeap for select the lowest weight edge
-	// Set partition generation(vertices)
-	MinHeap<int>* mh = new MinHeap<int>();
-	for (int i = 0; i < j; i++)
-		mh->Insert(edges[i]);
+	MinHeap* mh = new MinHeap();
+	for (int i = 0; i < ne; i++)
+		mh->Insert(e[i]);
 
 	// Spanning Tree Generating...
-	int vertexcount = 0;
+	Sets s(ne);
 	for (int i = 0; i < n; i++)
 	{
-		ListIterator<int>* li = new ListIterator<int>(HeadNodes[i]);
-		while (li->NotNull())
-		{
-			int vertex;
-			vertex = mh->DeleteMin(vertex);
-		}
+		
 	}
-
-
-
 }
 
 int main(void)
