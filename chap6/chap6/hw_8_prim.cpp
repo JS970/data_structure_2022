@@ -191,7 +191,7 @@ public:
 	bool InsertVertex(int startNode, int endNode);
 	void displayAdjacencyLists();
 	void DFS(int v);
-	void Prim(Graph& g);
+	void Prim(Graph& g, int startnode);
 private:
 	List<int>* HeadNodes; // int type linkedlist array
 	int n; // number of node(vertices)
@@ -496,72 +496,90 @@ bool Isin(int arr[], int sz, int check)
 	return false;
 }
 
-void Graph::Prim(Graph& g)
+void Graph::Prim(Graph& g, int startnode = 0)
 {
 	int small;
-	int headindex;
-	int headcount;
+	int smallidx = 0;
+	bool flag = false;
+	int select;
 	int j;
 	int* vertexarr = new int[g.n];
 	int idx = 0; // count for vertexarr
-	for (int i = 0; i < g.n;)
+	for (int i = startnode; i < g.n;)
 	{
-		ListIterator<int>* li = 0;
-		headindex = 0;
-		headcount = 0;
+		flag = false;
 		small = 9999;
-		for (j = 0; j < i; j++)
-		{
-			li = new ListIterator<int>(g.HeadNodes[j]);
-			while (li->NotNull())
-			{
-				headindex++;
-				li->Next();
-			}
-		}
-		li = new ListIterator<int>(g.HeadNodes[i]);
-		while (li->NotNull())
-		{
-			headcount++;
-			li->Next();
-		}
+
 		vertexarr[idx++] = i;
-		bool v1in;
-		bool v2in;
-		for (j = headindex; j < headindex + headcount - 1; j++)
+		for (j = 0; j < g.ne; j++)
 		{
-			if (j > g.ne) j /= 2;
-			// edge index error TODO FIX
-			if (g.e[j].vertex1->data != g.e[j].vertex2->data)
+			bool v1in = Isin(vertexarr, idx, g.e[j].vertex1->data);
+			bool v2in = Isin(vertexarr, idx, g.e[j].vertex2->data);
+			if (i == g.e[j].vertex1->data)
 			{
-				v1in = Isin(vertexarr, idx, g.e[j].vertex1->data);
-				v2in = Isin(vertexarr, idx, g.e[j].vertex2->data);
-				if (v1in || v2in)
-					small = (small < g.e[j].weight) ? small : g.e[j].weight;
+				if (small > g.e[j].weight)
+				{
+					if (i != g.e[j].vertex2->data)
+					{
+						if (!(v1in && v2in))
+						{
+							flag = true;
+							small = g.e[j].weight;
+							smallidx = j;
+							select = 2;
+						}
+					}
+				}
+			}
+		}
+		for (j = 0; j < g.ne; j++)
+		{
+			bool v1in = Isin(vertexarr, idx, g.e[j].vertex1->data);
+			bool v2in = Isin(vertexarr, idx, g.e[j].vertex2->data);
+			if (i == g.e[j].vertex2->data) // weird.. why??
+			{
+				if (small > g.e[j].weight)
+				{
+					if (i != g.e[j].vertex1->data)
+					{
+						if (!(v1in && v2in))
+						{
+							flag = true;
+							small = g.e[j].weight;
+							smallidx = j;
+							select = 2;
+						}
+					}
+				}
 			}
 		}
 
-		for (j = 0; j < headindex + headcount; j++)
-			if (small == g.e[j].weight) break;
-
-		cout << "vertex1 : " << g.e[j].vertex1->data << " vertex2 : " << g.e[j].vertex2->data << endl;
+		if (flag && (select == 1))
+			cout << "connect : vertex" << g.e[smallidx].vertex1->data << " ==== vertex" << g.e[smallidx].vertex2->data << endl;
+		if (flag && (select == 2))
+			cout << "connect : vertex" << g.e[smallidx].vertex2->data << " ==== vertex" << g.e[smallidx].vertex1->data << endl;
 		// start vertex, next vertex
-		if (InsertVertex(g.e[j].vertex1->data, g.e[j].vertex2->data))
+		if (InsertVertex(g.e[smallidx].vertex1->data, g.e[smallidx].vertex2->data) && flag)
 		{
 			// move to connected vertex
-			i = (g.e[j].vertex1->data < g.e[j].vertex2->data) ? g.e[j].vertex2->data : g.e[j].vertex1->data;
+			if (select == 1)
+				i = g.e[smallidx].vertex2->data;
+			else
+				i = g.e[smallidx].vertex1->data;
 		}
 		else
 		{
-			break;
+			cout << "cannot make spanning tree start with vertex \"" << startnode << "\"" << endl;
+			return;
 		}
 	}
+	displayAdjacencyLists();
 }
 
 // Driver program to test above functions
 int main(void)
 {
-	int select = 0, n, start, end, weight;
+	int select = 0, n, start, end, weight, startvertex;
 	int startBFSNode = 100;//the start node to BFS
 
 	cout << "Input the total node number: ";
@@ -581,10 +599,9 @@ int main(void)
 			break;
 		case 2:
 			cout << "\nSpanningTree - Prim's algorithm: " << endl;
-			spanningTree->Prim(graph);
-			if (spanningTree) {
-				spanningTree->displayAdjacencyLists();
-			}
+			cout << "Insert start vertex => ";
+			cin >> startvertex;
+			spanningTree->Prim(graph, startvertex);
 			delete spanningTree;
 			spanningTree = nullptr;
 			break;
