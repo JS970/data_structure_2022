@@ -502,6 +502,7 @@ void Graph::Prim(Graph& g, int startnode = 0)
 	int smallidx = 0;
 	bool flag = false;
 	int select;
+	int count = 0;
 	int j;
 	int* vertexarr = new int[g.n];
 	int idx = 0; // count for vertexarr
@@ -526,7 +527,7 @@ void Graph::Prim(Graph& g, int startnode = 0)
 							flag = true;
 							small = g.e[j].weight;
 							smallidx = j;
-							select = 2;
+							select = 1;
 						}
 					}
 				}
@@ -566,10 +567,13 @@ void Graph::Prim(Graph& g, int startnode = 0)
 				i = g.e[smallidx].vertex2->data;
 			else
 				i = g.e[smallidx].vertex1->data;
+			count++;
 		}
 		else
 		{
-			cout << "cannot make spanning tree start with vertex \"" << startnode << "\"" << endl;
+			if (count != g.n - 1)
+				cout << "cannot make spanning tree start with vertex \"" << startnode << "\"" << endl;
+			else cout << "spanning tree gererated!" << endl;
 			return;
 		}
 	}
