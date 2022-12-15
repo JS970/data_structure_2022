@@ -445,7 +445,7 @@ void Tree::StackPostorder()
 		if (!s.IsEmpty()) {
 			CurrentNode = *s.Delete(CurrentNode);
 			cout << "student id : " << CurrentNode->data.sid << endl;
-			cout << "grade : " << CurrentNode->data.sid << endl;
+			cout << "grade : " << CurrentNode->data.grade << endl;
 			cout << "age : " << CurrentNode->data.age << endl << endl;
 			CurrentNode = CurrentNode->LeftChild;
 		}
