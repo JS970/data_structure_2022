@@ -377,13 +377,13 @@ int Tree::Delete(int elm) {
 	TreeNode* q = 0;	// target node
 	TreeNode* r = 0;	// inorder sucessor node
 	TreeNode* s = 0;	// parent node
-	int inorderSucessor;
+	int inorderpredecessor;
 	// find target node(q) and its parent node(s)
 	while (p)
 	{
 		s = q;
 		q = p;
-		if (elm == p->data) break;
+		if (elm == p->data.sid) break;
 		if (elm < p->data) p = p->LeftChild;
 		else p = p->RightChild;
 	}

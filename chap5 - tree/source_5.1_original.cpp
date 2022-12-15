@@ -184,23 +184,37 @@ void Queue<KeyType>::Output()
 
 //inorder(), postorder(), preorder() -> NonrecInorder() -> class InorderIterator -> Next() -> LevelOrder() -> NoStackInorder() -> Copy() -> equal()
 
+class student
+{
+public:
+	student() { 
+		sid = rand() % 10000;
+		grade = rand() % 5 + rand() % 100 * 0.01; if (grade >= 4.5) grade = grade - 0.5;
+		age = rand() % 30;
+	}
+	int sid;
+	float grade;
+	int age;
+};
+
 class Tree;
 
 class TreeNode {
 	friend class Tree;
 	friend class InorderIterator;
 	friend int equal(TreeNode*, TreeNode*);
+	friend int main();
 private:
 	TreeNode* LeftChild;
-	int data;
+	student data;
 	TreeNode* RightChild;
 
 	TreeNode() {
 		LeftChild = RightChild = 0;
 	};
 
-	TreeNode(int ch, TreeNode* Lefty, TreeNode* Righty) {
-		data = ch;
+	TreeNode(student ch, TreeNode* Lefty, TreeNode* Righty) {
+		data.sid = ch.sid;
 		LeftChild = Lefty;
 		RightChild = Righty;
 	}
@@ -209,6 +223,7 @@ private:
 class Tree {
 	friend int operator==(const Tree&, const Tree&);
 	friend class InorderIterator;
+	friend int main();
 private:
 	TreeNode* root;
 	void inorder(TreeNode*);
@@ -219,15 +234,12 @@ public:
 	Tree(const Tree&);
 	Tree() { root = 0; };
 
-	bool Insert(int);
-	int Delete(int);//임의 값 x를 delete하는 구현 실습
+	bool Insert(student); // 기말고사
+	int Delete(int);// 기말고사
 	void inorder();
 	void preorder();
 	void postorder();
-	void NoStackInorder();
-	void NonrecInorder();
-	void LevelOrder();
-	Tree* Copy(); //void Copy(Tree&);
+	void StackPostorder(); // 기말고사
 	TreeNode* InorderSucc(TreeNode*);
 };
 TreeNode* Tree::InorderSucc(TreeNode* current)
@@ -260,7 +272,7 @@ int* InorderIterator::Next()
 	}
 	if (!s.IsEmpty()) {
 		CurrentNode = *s.Delete(CurrentNode);
-		int& temp = CurrentNode->data;
+		int& temp = CurrentNode->data.sid;
 		CurrentNode = CurrentNode->RightChild;
 		return &temp;
 	}
@@ -286,7 +298,9 @@ void Tree::inorder(TreeNode* CurrentNode)
 {
 	if (CurrentNode) {
 		inorder(CurrentNode->LeftChild);
-		cout << " " << CurrentNode->data;
+		cout << "student id : " << CurrentNode->data.sid << endl;
+		cout << "grade : " << CurrentNode->data.grade << endl;
+		cout << "age : " << CurrentNode->data.age << endl << endl;
 		inorder(CurrentNode->RightChild);
 	}
 }
@@ -294,7 +308,7 @@ void Tree::inorder(TreeNode* CurrentNode)
 void Tree::preorder(TreeNode* CurrentNode)
 {
 	if (CurrentNode) {
-		cout << CurrentNode->data << " ";
+		cout << CurrentNode->data.sid << " ";
 		preorder(CurrentNode->LeftChild);
 		preorder(CurrentNode->RightChild);
 	}
@@ -305,7 +319,7 @@ void Tree::postorder(TreeNode* CurrentNode)
 	if (CurrentNode) {
 		postorder(CurrentNode->LeftChild);
 		postorder(CurrentNode->RightChild);
-		cout << CurrentNode->data << " ";
+		cout << CurrentNode->data.sid << " ";
 	}
 }
 
@@ -338,143 +352,137 @@ equivalent. Otherwise, it will return 1 */
 {
 	if ((!a) && (!b)) return 1;  // both a and b are 0
 	if (a && b &&                // both a and b are non-0
-		(a->data == b->data)      // data is the same
+		(a->data.sid == b->data.sid)      // data is the same
 		&& equal(a->LeftChild, b->LeftChild) // left subtrees are the same
 		&& equal(a->RightChild, b->RightChild)) // right subtrees are the same
 		return 1;
 	return 0;
 }
 
-bool Tree::Insert(int x) {//binary search tree를 만드는 입력 => A + B * C을 tree로 만드는 방법: 입력 해결하는 알고리즘 작성 방법을 설계하여 구현
+bool Tree::Insert(student x) {//binary search tree를 만드는 입력 => A + B * C을 tree로 만드는 방법: 입력 해결하는 알고리즘 작성 방법을 설계하여 구현
 	TreeNode* p = root;
 	TreeNode* q = 0;
 	while (p) {
 		q = p;
-		if (x == p->data) return false;
-		if (x < p->data) p = p->LeftChild;
+		if (x.sid == p->data.sid) return false;
+		if (x.sid < p->data.sid) p = p->LeftChild;
 		else p = p->RightChild;
 	}
 	p = new TreeNode;
 	p->LeftChild = p->RightChild = 0;
-	p->data = x;
+	p->data.sid = x.sid;
 	if (!root) root = p;
-	else if (x < q->data) q->LeftChild = p;
+	else if (x.sid < q->data.sid) q->LeftChild = p;
 	else q->RightChild = p;
 	return true;
 }
 int Tree::Delete(int elm) {
 	//leaf node를 삭제하는 경우
 	//non-leaf node를 삭제하는 경우에는 inorder successor로 replace 한후에 leaf node를 삭제하도록 구현해야 한다. 
-	return 0;
+	//기말고사 => inorder successor가 아니라 inorder predecessor로 replace해야 함
+	TreeNode* p = root; // traversal node
+	TreeNode* q = 0;	// target node
+	TreeNode* r = 0;	// inorder predecessor node
+	TreeNode* s = 0;	// parent node
+	int inorderpredecessor;
+	// find target node(q) and its parent node(s)
+	while (p)
+	{
+		s = q;
+		q = p;
+		if (elm == p->data.sid) break;
+		if (elm < p->data.sid) p = p->LeftChild;
+		else p = p->RightChild;
+	}
+	// if p == NULL, elm dosen't exist in this tree
+	if (!p)
+	{
+		cout << "no such element in tree" << endl;
+		return 0;
+	}
+
+	if (!q->LeftChild && !q->RightChild) // child node : 0
+	{
+		if (q->data.sid < s->data.sid) s->LeftChild = 0;
+		else if (q->data.sid > s->data.sid) s->RightChild = 0;
+	}
+	else if (!q->LeftChild || !q->RightChild) // child node : 1
+	{
+		if (q->data.sid == s->LeftChild->data.sid)
+		{
+			if (q->LeftChild) s->LeftChild = q->LeftChild;
+			else s->LeftChild = q->RightChild;
+		}
+		else if (q->data.sid == s->RightChild->data.sid)
+		{
+			if (q->LeftChild) s->RightChild = q->LeftChild;
+			else s->RightChild = q->RightChild;
+		}
+	}
+	else // non leaf, child node : 2
+	{
+		// configure inorder predecessor, inorder predecessor node(r)
+		r = q->LeftChild;
+		while (r->RightChild) r = r->RightChild;
+		inorderpredecessor = r->data.sid; //
+
+		this->Delete(inorderpredecessor); //
+		q->data.sid = inorderpredecessor; //
+	}
+	return 1;
 }
-void Tree::NonrecInorder()//void Tree::inorder(TreeNode *CurrentNode)와 비교
+
+
+void Tree::StackPostorder()
 {
 	Stack<TreeNode*> s;
 	TreeNode* CurrentNode = root;
 	while (1) {
 		while (CurrentNode) {
 			s.Add(CurrentNode);
-			CurrentNode = CurrentNode->LeftChild;
+			CurrentNode = CurrentNode->RightChild;
 		}
 		if (!s.IsEmpty()) {
 			CurrentNode = *s.Delete(CurrentNode);
-			cout << CurrentNode->data << endl;
-			CurrentNode = CurrentNode->RightChild;
+			cout << "student id : " << CurrentNode->data.sid << endl;
+			cout << "grade : " << CurrentNode->data.sid << endl;
+			cout << "age : " << CurrentNode->data.age << endl << endl;
+			CurrentNode = CurrentNode->LeftChild;
 		}
 		else break;
 	}
 }
-void Tree::LevelOrder()
-{
-	Queue <TreeNode*> q;
-	TreeNode* CurrentNode = root;
-	while (CurrentNode) {
-		cout << CurrentNode->data << endl;
-		if (CurrentNode->LeftChild)
-			q.Add(CurrentNode->LeftChild);
-		if (CurrentNode->RightChild)
-			q.Add(CurrentNode->RightChild);
-		CurrentNode = *q.Delete(CurrentNode);
-	}
-}
-void Tree::NoStackInorder() //inorder()와 비교
-{
-	if (!root) return;
-	TreeNode* top = 0, * LastRight = 0, * p, * q, * r, * r1;//local variable이 key point
-	p = q = root;
-	while (1) {
-		while (1) {
-			if ((!p->LeftChild) && (!p->RightChild)) {
-				cout << p->data; break;
-			}
-			if (!p->LeftChild) {
-				cout << p->data;
-				r = p->RightChild; p->RightChild = q;
-				q = p; p = r;
-			}
-			else {
-				r = p->LeftChild; p->LeftChild = q;
-				q = p; p = r;
-			}
-		}
-		TreeNode* av = p;
-		while (1) {
-			if (p == root) return;
-			if (!q->LeftChild) {
-				r = q->RightChild; q->RightChild = p;
-				p = q; q = r;
-			}
-			else if (!q->RightChild) {
-				r = q->LeftChild; q->LeftChild = p;
-				p = q; q = r; cout << p->data;
-			}
-			else
-				if (q == LastRight) {
-					r = top; LastRight = r->LeftChild;
-					top = r->RightChild;
-					r->LeftChild = r->RightChild = 0;
-					r = q->RightChild; q->RightChild = p;
-					p = q; q = r;
-				}
-				else {
-					cout << q->data;
-					av->LeftChild = LastRight; av->RightChild = top;
-					top = av; LastRight = q;
-					r = q->LeftChild; q->LeftChild = p;
-					r1 = q->RightChild; q->RightChild = r;
-					p = r1;
-					break;
-				}
-		}
-	}
-}
-
 
 int main(void)
 {
 	srand(time(NULL));
 	Tree t;
-	int eq = -1;
 	char select = 'i';
 	int max = 0, x = 0;
+	student* stdarr = new student[30];
+	int r;
+	int lc;
+	int rc;
+	for (int i = 0; i < 30; i++)
+	{
+		stdarr[i] = student();
+	}
 	while (select != 'q')
 	{
 		int rnd = 0;
-		cout << "BinarySearchTree. Select i:Insert, r: remove, d:Display, e:NonrecInorder, f:preorder, g:postorder, h:copy and compare, q : Quit =>";
+		cout << "BinarySearchTree. Select i:Insert, r: remove, d:Display(inorder), e:StackPostorder, f:2022 DataStructure Final exam, q : Quit =>";
 		cin >> select;
 		switch (select)
 		{
 		case 'i':
-			cout << "The number of items = ";
-			cin >> max;
-			for (int i = 0; i < max; i++) {
-				rnd = rand() / 100;
-				if (!t.Insert(rnd)) cout << "Insert Duplicated data" << endl;
+			cout << "30 students object generated" << endl;
+			for (int i = 0; i < 30; i++) {
+				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
 			}
-
 			break;
 		case 'r':
 			int x;
+			cout << "insert sid of the student";
 			cin >> x;
 			cout << t.Delete(x);//입력된 x에 대한 tree 노드를 찾아 삭제한다.
 			cout << endl;
@@ -484,22 +492,43 @@ int main(void)
 			cout << endl;
 			break;
 		case 'e':
-			t.NonrecInorder();
+			t.StackPostorder();
 			break;
 		case 'f':
-			t.preorder();
-			break;
-		case 'g':
-			t.postorder();
-			break;
-		case 'h':
-			eq = (t == Tree(t));//copy constructor를 호출
-			if (eq) {
-				cout << "compare result: true" << endl;
+		{
+			cout << "generating student objects..." << endl;
+			for (int i = 0; i < 30; i++) {
+				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
 			}
-			else
-				cout << "compare result: false" << endl;
+
+			cout << "inorder display" << endl;
+			for (int i = 0; i < 30; i++) {
+				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
+			}
+
+			cout << "StackPostOrder display" << endl;
+			t.StackPostorder();
+
+			cout << "Delete examples" << endl;
+			cout << "delete root and root's both childs" << endl;
+			r = t.root->data.sid;
+			lc = t.root->LeftChild->data.sid;
+			rc = t.root->RightChild->data.sid;
+			cout << "deleted student's sid : " << r << ", " << lc << ", " << rc << endl;
+			t.Delete(r);
+			t.Delete(lc);
+			t.Delete(rc);
+
+			cout << "inorder display after delete" << endl;
+			for (int i = 0; i < 30; i++) {
+				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
+			}
+
+			cout << "StackPostOrder display after delete" << endl;
+			t.StackPostorder();
+
 			break;
+		}
 		case 'q':
 			cout << "Quit" << endl;
 			break;
