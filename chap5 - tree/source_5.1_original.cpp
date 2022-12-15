@@ -502,9 +502,7 @@ int main(void)
 			}
 
 			cout << "inorder display" << endl;
-			for (int i = 0; i < 30; i++) {
-				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
-			}
+			t.inorder();
 
 			cout << "StackPostOrder display" << endl;
 			t.StackPostorder();
@@ -520,9 +518,7 @@ int main(void)
 			t.Delete(rc);
 
 			cout << "inorder display after delete" << endl;
-			for (int i = 0; i < 30; i++) {
-				if (!t.Insert(stdarr[i])) cout << "Insert Duplicated data" << endl;
-			}
+			t.inorder();
 
 			cout << "StackPostOrder display after delete" << endl;
 			t.StackPostorder();
